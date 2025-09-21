@@ -94,7 +94,7 @@ const KnowYourRightsPage: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/know-your-rights', {
+      const response = await fetch('https://legalmate-a36k.onrender.com/api/know-your-rights', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
