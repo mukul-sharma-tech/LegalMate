@@ -1,26 +1,22 @@
-# Use a lightweight Python base image
+# Use Python base image
 FROM python:3.11-slim
 
-# Set work directory
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Set workdir
 WORKDIR /app
 
-# Install system dependencies (needed for FAISS, etc.)
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements first for caching
+# Install dependencies
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
+# Copy app
 COPY . .
 
-# Expose Flask default port
+# Expose Render’s port
 EXPOSE 5000
 
-# Start the app
+# Run app (Render will inject $PORT)
 CMD ["python", "app.py"]
