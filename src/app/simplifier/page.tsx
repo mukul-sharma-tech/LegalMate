@@ -1,394 +1,10 @@
-// 'use client';
-
-// import React, { useState } from 'react';
-// import Link from 'next/link';
-// import { ArrowLeftIcon } from '@heroicons/react/24/solid';  
-
-// // --- Type Definitions ---
-// interface SimplifiedPoint {
-//   title: string;
-//   text: string;
-// }
-
-// // --- SVG Icons ---
-// const UploadCloudIcon = ({ className }: {className?: string}) => (
-//     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//         <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
-//         <path d="M12 12v9"></path>
-//         <path d="m16 16-4-4-4 4"></path>
-//     </svg>
-// );
-
-// const CheckCircleIcon = ({ className }: {className?: string}) => (
-//     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-//         <polyline points="22 4 12 14.01 9 11.01"></polyline>
-//     </svg>
-// );
-
-// // --- Sample Data ---
-// const sampleLegalText = `This agreement ("Agreement") is entered into as of the Effective Date by and between the "Company" and the "Consultant". WHEREAS, the Company requires specialized services; NOW, THEREFORE, the parties agree to the following terms...`;
-
-// const sampleSimplifiedText: SimplifiedPoint[] = [
-//     { title: "Who's Involved", text: "This is a contract between a business ('Company') and a freelance expert ('Consultant')." },
-//     { title: "What's the Job", text: "The Consultant will do specific work for the Company, as detailed in a separate document." },
-//     { title: "Payment", text: "The Company will pay the Consultant according to a pre-agreed payment plan." }
-// ];
-
-
-// export default function DocumentSimplifierPage() {
-//     const [isLoading, setIsLoading] = useState<boolean>(false);
-//     const [result, setResult] = useState<SimplifiedPoint[]>([]);
-//     const [text, setText] = useState<string>(sampleLegalText);
-
-//     const handleSimplify = () => {
-//         setIsLoading(true);
-//         setResult([]);
-//         setTimeout(() => {
-//             setResult(sampleSimplifiedText);
-//             setIsLoading(false);
-//         }, 1500);
-//     };
-    
-//     return (
-//         <main className="flex flex-col items-center min-h-screen p-4 bg-slate-900 text-white">
-//             <div className="w-full max-w-6xl mx-auto px-4 py-12">
-
-//             <Link href="/" className="inline-flex items-center mb-6 text-sky-400 hover:underline">
-//                 <ArrowLeftIcon className="w-5 h-5 mr-2" />
-//                 Back to Home
-//             </Link>
-//                 <div className="text-center mb-12">
-//                     <h1 className="text-4xl font-bold text-white">Legal Document Simplifier</h1>
-//                     <p className="text-lg text-slate-300 mt-2">Paste your complex legal text below to get a simple, easy-to-understand summary.</p>
-//                 </div>
-
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-//                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50 flex flex-col">
-//                         <h2 className="text-2xl font-semibold text-white mb-4">Original Document</h2>
-//                         <div className="flex-grow flex flex-col">
-//                             <textarea
-//                                 value={text}
-//                                 onChange={(e) => setText(e.target.value)}
-//                                 className="w-full h-80 bg-slate-900 border border-slate-700 rounded-lg p-4 text-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none transition-shadow"
-//                                 placeholder="Paste your legal text here..."
-//                             ></textarea>
-//                             <div className="flex items-center my-4">
-//                                 <div className="flex-grow border-t border-slate-700"></div>
-//                                 <span className="flex-shrink mx-4 text-slate-500">OR</span>
-//                                 <div className="flex-grow border-t border-slate-700"></div>
-//                             </div>
-//                             <button className="w-full flex justify-center items-center gap-3 bg-slate-700 text-sky-300 font-semibold py-3 px-6 rounded-lg hover:bg-slate-600 transition-colors">
-//                                 <UploadCloudIcon className="w-6 h-6" />
-//                                 Upload PDF
-//                             </button>
-//                         </div>
-//                          <button onClick={handleSimplify} disabled={isLoading || !text} className="mt-6 w-full bg-sky-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-sky-500 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors">
-//                             {isLoading ? 'Simplifying...' : 'Simplify Text'}
-//                         </button>
-//                     </div>
-//                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
-//                         <h2 className="text-2xl font-semibold text-white mb-4">Simplified Summary</h2>
-//                         <div className="w-full h-[30rem] bg-slate-900 border border-slate-700 rounded-lg p-4 text-slate-300 overflow-y-auto">
-//                             {isLoading && <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400"></div></div>}
-                            
-//                             {!isLoading && result.length > 0 && (
-//                                 <div className="space-y-3">
-//                                     {result.map((item, index) => (
-//                                         <div key={index} className="bg-slate-800/60 p-4 rounded-lg border border-slate-700/70 flex items-start gap-4">
-//                                             <CheckCircleIcon className="w-6 h-6 text-green-400 mt-1 flex-shrink-0" />
-//                                             <div>
-//                                                 <h4 className="font-bold text-white">{item.title}</h4>
-//                                                 <p className="text-slate-300">{item.text}</p>
-//                                             </div>
-//                                         </div>
-//                                     ))}
-//                                 </div>
-//                             )}
-
-//                             {!isLoading && result.length === 0 && <div className="text-slate-500 flex items-center justify-center h-full">Your simplified summary will appear here.</div>}
-//                         </div>
-//                     </div>
-//                 </div>
-//             </div>
-//         </main>
-//     );
-// }
-
-
-
-// 'use client';
-
-// import React, { useState } from 'react';
-// import Link from 'next/link';
-// import { ArrowLeftIcon } from '@heroicons/react/24/solid';  
-
-// // --- Type Definitions ---
-// interface SimplifiedPoint {
-//   title: string;
-//   text: string;
-// }
-
-// interface ApiResponse {
-//   summary_points?: SimplifiedPoint[];
-//   error?: string;
-// }
-
-// // --- SVG Icons ---
-// const UploadCloudIcon = ({ className }: {className?: string}) => (
-//     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//         <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
-//         <path d="M12 12v9"></path>
-//         <path d="m16 16-4-4-4 4"></path>
-//     </svg>
-// );
-
-// const CheckCircleIcon = ({ className }: {className?: string}) => (
-//     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-//         <polyline points="22 4 12 14.01 9 11.01"></polyline>
-//     </svg>
-// );
-
-// const AlertCircleIcon = ({ className }: {className?: string}) => (
-//     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//         <circle cx="12" cy="12" r="10"></circle>
-//         <line x1="12" y1="8" x2="12" y2="12"></line>
-//         <line x1="12" y1="16" x2="12.01" y2="16"></line>
-//     </svg>
-// );
-
-// // --- Sample Data ---
-// const sampleLegalText = `This agreement ("Agreement") is entered into as of the Effective Date by and between the "Company" and the "Consultant". WHEREAS, the Company requires specialized services; and WHEREAS, the Consultant has the expertise and qualifications to provide such services; NOW, THEREFORE, the parties agree to the following terms and conditions: 1. Services: The Consultant shall provide professional consulting services as described in Exhibit A attached hereto and incorporated by reference. 2. Compensation: In consideration for the services provided, the Company shall pay the Consultant the fees set forth in Exhibit B. 3. Term: This Agreement shall commence on the Effective Date and shall continue until terminated by either party upon thirty (30) days written notice.`;
-
-// export default function DocumentSimplifierPage() {
-//     const [isLoading, setIsLoading] = useState<boolean>(false);
-//     const [result, setResult] = useState<SimplifiedPoint[]>([]);
-//     const [text, setText] = useState<string>(sampleLegalText);
-//     const [error, setError] = useState<string>('');
-
-//     const handleSimplify = async () => {
-//         if (!text.trim()) {
-//             setError('Please enter some text to simplify.');
-//             return;
-//         }
-
-//         setIsLoading(true);
-//         setResult([]);
-//         setError('');
-
-//         try {
-//             const response = await fetch('http://localhost:5000/api/simplify', {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                 },
-//                 body: JSON.stringify({ text: text.trim() })
-//             });
-
-//             if (!response.ok) {
-//                 throw new Error(`HTTP error! status: ${response.status}`);
-//             }
-
-//             const data: ApiResponse = await response.json();
-
-//             if (data.error) {
-//                 throw new Error(data.error);
-//             }
-
-//             if (data.summary_points && Array.isArray(data.summary_points)) {
-//                 setResult(data.summary_points);
-//             } else {
-//                 throw new Error('Invalid response format from server');
-//             }
-
-//         } catch (err) {
-//             console.error('Error calling simplify API:', err);
-//             setError(err instanceof Error ? err.message : 'Failed to simplify document. Please try again.');
-//         } finally {
-//             setIsLoading(false);
-//         }
-//     };
-
-//     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-//         const file = event.target.files?.[0];
-//         if (!file) return;
-
-//         if (file.type !== 'application/pdf') {
-//             setError('Please select a PDF file.');
-//             return;
-//         }
-
-//         // For now, show a message that PDF upload is not yet implemented
-//         setError('PDF upload feature is coming soon. Please paste your text in the textarea for now.');
-        
-//         // Reset the file input
-//         event.target.value = '';
-//     };
-
-//     const clearError = () => setError('');
-
-//     return (
-//         <main className="flex flex-col items-center min-h-screen p-4 bg-slate-900 text-white">
-//             <div className="w-full max-w-6xl mx-auto px-4 py-12">
-//                 <Link href="/" className="inline-flex items-center mb-6 text-sky-400 hover:underline">
-//                     <ArrowLeftIcon className="w-5 h-5 mr-2" />
-//                     Back to Home
-//                 </Link>
-
-//                 <div className="text-center mb-12">
-//                     <h1 className="text-4xl font-bold text-white">Legal Document Simplifier</h1>
-//                     <p className="text-lg text-slate-300 mt-2">Paste your complex legal text below to get a simple, easy-to-understand summary.</p>
-//                 </div>
-
-//                 {/* Error Alert */}
-//                 {error && (
-//                     <div className="mb-6 bg-red-900/50 border border-red-700 rounded-lg p-4 flex items-start gap-3">
-//                         <AlertCircleIcon className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
-//                         <div className="flex-grow">
-//                             <h3 className="font-semibold text-red-300">Error</h3>
-//                             <p className="text-red-200">{error}</p>
-//                         </div>
-//                         <button 
-//                             onClick={clearError}
-//                             className="text-red-400 hover:text-red-300 transition-colors"
-//                         >
-//                             ×
-//                         </button>
-//                     </div>
-//                 )}
-
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-//                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50 flex flex-col">
-//                         <h2 className="text-2xl font-semibold text-white mb-4">Original Document</h2>
-//                         <div className="flex-grow flex flex-col">
-//                             <textarea
-//                                 value={text}
-//                                 onChange={(e) => setText(e.target.value)}
-//                                 className="w-full h-80 bg-slate-900 border border-slate-700 rounded-lg p-4 text-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none transition-shadow resize-none"
-//                                 placeholder="Paste your legal text here..."
-//                             ></textarea>
-                            
-//                             <div className="flex items-center my-4">
-//                                 <div className="flex-grow border-t border-slate-700"></div>
-//                                 <span className="flex-shrink mx-4 text-slate-500">OR</span>
-//                                 <div className="flex-grow border-t border-slate-700"></div>
-//                             </div>
-                            
-//                             <label className="w-full flex justify-center items-center gap-3 bg-slate-700 text-sky-300 font-semibold py-3 px-6 rounded-lg hover:bg-slate-600 transition-colors cursor-pointer">
-//                                 <UploadCloudIcon className="w-6 h-6" />
-//                                 Upload PDF
-//                                 <input
-//                                     type="file"
-//                                     accept=".pdf"
-//                                     onChange={handleFileUpload}
-//                                     className="hidden"
-//                                 />
-//                             </label>
-//                         </div>
-                        
-//                         <button 
-//                             onClick={handleSimplify} 
-//                             disabled={isLoading || !text.trim()} 
-//                             className="mt-6 w-full bg-sky-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-sky-500 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors"
-//                         >
-//                             {isLoading ? (
-//                                 <div className="flex items-center justify-center gap-2">
-//                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-//                                     Simplifying...
-//                                 </div>
-//                             ) : (
-//                                 'Simplify Text'
-//                             )}
-//                         </button>
-//                     </div>
-
-//                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
-//                         <h2 className="text-2xl font-semibold text-white mb-4">Simplified Summary</h2>
-//                         <div className="w-full h-[30rem] bg-slate-900 border border-slate-700 rounded-lg p-4 text-slate-300 overflow-y-auto">
-//                             {isLoading && (
-//                                 <div className="flex flex-col justify-center items-center h-full gap-4">
-//                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400"></div>
-//                                     <p className="text-slate-400">Analyzing and simplifying your document...</p>
-//                                 </div>
-//                             )}
-                            
-//                             {!isLoading && result.length > 0 && (
-//                                 <div className="space-y-4">
-//                                     <div className="mb-4 p-3 bg-green-900/30 border border-green-700/50 rounded-lg">
-//                                         <p className="text-green-300 text-sm">
-//                                             ✓ Successfully simplified {result.length} key point{result.length !== 1 ? 's' : ''} from your document
-//                                         </p>
-//                                     </div>
-//                                     {result.map((item, index) => (
-//                                         <div key={index} className="bg-slate-800/60 p-4 rounded-lg border border-slate-700/70 flex items-start gap-4 hover:bg-slate-800/80 transition-colors">
-//                                             <div className="flex-shrink-0 w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-//                                                 {index + 1}
-//                                             </div>
-//                                             <div className="flex-grow">
-//                                                 <h4 className="font-bold text-white mb-2">{item.title}</h4>
-//                                                 <p className="text-slate-300 leading-relaxed">{item.text}</p>
-//                                             </div>
-//                                         </div>
-//                                     ))}
-//                                 </div>
-//                             )}
-
-//                             {!isLoading && result.length === 0 && !error && (
-//                                 <div className="text-slate-500 flex flex-col items-center justify-center h-full gap-3">
-//                                     <div className="w-16 h-16 border-2 border-slate-600 rounded-full flex items-center justify-center">
-//                                         <CheckCircleIcon className="w-8 h-8 text-slate-600" />
-//                                     </div>
-//                                     <p className="text-center">Your simplified summary will appear here.</p>
-//                                     <p className="text-sm text-slate-600 text-center">Enter some legal text and click &quot;Simplify Text&quot; to get started.</p>
-//                                 </div>
-//                             )}
-//                         </div>
-//                     </div>
-//                 </div>
-
-//                 {/* Additional Info Section */}
-//                 <div className="mt-12 bg-slate-800/30 p-6 rounded-xl border border-slate-700/30">
-//                     <h3 className="text-xl font-semibold text-white mb-4">How it works</h3>
-//                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-//                         <div className="flex items-start gap-3">
-//                             <div className="w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">1</div>
-//                             <div>
-//                                 <h4 className="font-semibold text-slate-200 mb-1">Paste or Upload</h4>
-//                                 <p className="text-slate-400">Add your complex legal document text to the input area.</p>
-//                             </div>
-//                         </div>
-//                         <div className="flex items-start gap-3">
-//                             <div className="w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">2</div>
-//                             <div>
-//                                 <h4 className="font-semibold text-slate-200 mb-1">AI Analysis</h4>
-//                                 <p className="text-slate-400">Our AI breaks down the document into key points and concepts.</p>
-//                             </div>
-//                         </div>
-//                         <div className="flex items-start gap-3">
-//                             <div className="w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">3</div>
-//                             <div>
-//                                 <h4 className="font-semibold text-slate-200 mb-1">Simple Summary</h4>
-//                                 <p className="text-slate-400">Get an easy-to-understand breakdown of the main points.</p>
-//                             </div>
-//                         </div>
-//                     </div>
-//                 </div>
-//             </div>
-//         </main>
-//     );
-// }
-
-
 'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeftIcon } from '@heroicons/react/24/solid';
+import { ArrowLeft, UploadCloud, CheckCircle, AlertCircle } from "lucide-react";
 
-// react-pdf and pdfjs-dist are NO LONGER NEEDED
-
-// --- Type Definitions (no changes) ---
+// --- Type Definitions ---
 interface SimplifiedPoint {
   title: string;
   text: string;
@@ -398,23 +14,6 @@ interface ApiResponse {
   error?: string;
 }
 
-// --- SVG Icons (no changes) ---
-const UploadCloudIcon = ({ className }: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path>
-    </svg>
-);
-const CheckCircleIcon = ({ className }: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>
-    </svg>
-);
-const AlertCircleIcon = ({ className }: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
-    </svg>
-);
-
 export default function DocumentSimplifierPage() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isProcessingPdf, setIsProcessingPdf] = useState<boolean>(false);
@@ -422,7 +21,6 @@ export default function DocumentSimplifierPage() {
     const [text, setText] = useState<string>('');
     const [error, setError] = useState<string>('');
 
-    // The handleSimplify function remains the same.
     const handleSimplify = async () => {
         if (!text.trim()) {
             setError('Please enter some text or upload a PDF to simplify.');
@@ -432,7 +30,7 @@ export default function DocumentSimplifierPage() {
         setResult([]);
         setError('');
         try {
-            const response = await fetch('/api/simplify', { // Assuming your simplify endpoint is at /api/simplify
+            const response = await fetch('http://127.0.0.1:5000/api/simplify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: text.trim() })
@@ -449,7 +47,6 @@ export default function DocumentSimplifierPage() {
         }
     };
 
-    // --- UPDATED: handleFileUpload now calls your new API route ---
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -494,7 +91,7 @@ export default function DocumentSimplifierPage() {
         <main className="flex flex-col items-center min-h-screen p-4 bg-slate-900 text-white">
             <div className="w-full max-w-6xl mx-auto px-4 py-12">
                  <Link href="/" className="inline-flex items-center mb-6 text-sky-400 hover:underline">
-                    <ArrowLeftIcon className="w-5 h-5 mr-2" />
+                    <ArrowLeft className="w-5 h-5 mr-2" />
                     Back to Home
                 </Link>
 
@@ -505,7 +102,7 @@ export default function DocumentSimplifierPage() {
 
                 {error && (
                     <div className="mb-6 bg-red-900/50 border border-red-700 rounded-lg p-4 flex items-start gap-3">
-                        <AlertCircleIcon className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+                        <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
                         <div className="flex-grow">
                             <h3 className="font-semibold text-red-300">Error</h3>
                             <p className="text-red-200">{error}</p>
@@ -533,7 +130,7 @@ export default function DocumentSimplifierPage() {
                                 {isProcessingPdf ? (
                                     <><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>Processing PDF...</>
                                 ) : (
-                                    <><UploadCloudIcon className="w-6 h-6" />Upload PDF</>
+                                    <><UploadCloud className="w-6 h-6" />Upload PDF</>
                                 )}
                                 <input type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" disabled={isProcessingPdf}/>
                             </label>
@@ -565,7 +162,7 @@ export default function DocumentSimplifierPage() {
                             )}
                             {!isLoading && result.length === 0 && !error && (
                                 <div className="text-slate-500 flex flex-col items-center justify-center h-full gap-3">
-                                    <div className="w-16 h-16 border-2 border-slate-600 rounded-full flex items-center justify-center"><CheckCircleIcon className="w-8 h-8 text-slate-600" /></div>
+                                    <div className="w-16 h-16 border-2 border-slate-600 rounded-full flex items-center justify-center"><CheckCircle className="w-8 h-8 text-slate-600" /></div>
                                     <p className="text-center">Your simplified summary will appear here.</p><p className="text-sm text-slate-600 text-center">Enter some legal text and click &quot;Simplify Text&quot; to get started.</p>
                                 </div>
                             )}

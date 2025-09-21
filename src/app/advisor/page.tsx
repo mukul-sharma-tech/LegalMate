@@ -1,120 +1,15 @@
-// 'use client';
-
-// import React, { useState } from 'react';
-// import Link from 'next/link';
-// import { ArrowLeftIcon } from '@heroicons/react/24/solid';  
-
-// // --- Type Definitions ---
-// interface CaseAnalysisPoint {
-//   type: 'point' | 'recommendation';
-//   title: string;
-//   text: string;
-// }
-
-// // --- SVG Icons ---
-// const GavelIcon = ({ className }: {className?: string}) => (
-//     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//         <path d="M14.5 12.5 12 15l-3-3-2 2L10 17l.5.5L14 14l3 3 2.5-2.5-2-2Z"></path><path d="m16 16 6-6"></path><path d="m8 8-6 6"></path><path d="m9 7 4-4 6 6-4 4-1-1"></path><path d="M15 13l-1.5-1.5"></path>
-//     </svg>
-// );
-
-// const AlertTriangleIcon = ({ className }: {className?: string}) => (
-//     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//         <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path>
-//     </svg>
-// );
-
-
-// // --- Sample Data ---
-// const sampleCaseText = `My landlord is trying to evict me from my apartment. He gave me a notice that says I have to leave in 7 days, but my lease agreement says he needs to give 30 days' notice. He also shut off the water to my apartment yesterday to try and force me out. I have always paid my rent on time. What can I do?`;
-
-// const sampleCaseAnalysis: CaseAnalysisPoint[] = [
-//     { type: 'point', title: 'Breach of Contract (Lease Agreement)', text: "Your landlord may be violating the terms of your lease, which states a 3-day notice period is required. The 7-day notice he provided might be legally insufficient." },
-//     { type: 'point', title: 'Constructive Eviction', text: 'By shutting off your water, the landlord is likely engaging in "constructive eviction." This is an illegal tactic where a landlord makes living conditions unbearable to force a tenant to leave.' },
-//     { type: 'point', title: "Tenant's Right to Habitability", text: "You have a right to a safe and habitable living space, which includes access to essential utilities like water." },
-//     { type: 'recommendation', title: 'Recommendation', text: "You should not have to leave in 7 days. It is advisable to contact a local tenant rights organization or seek legal aid to formally respond to the landlord's notice and address the illegal utility shutoff." }
-// ];
-
-
-// export default function AIAdvisorPage() {
-//     const [isLoading, setIsLoading] = useState<boolean>(false);
-//     const [result, setResult] = useState<CaseAnalysisPoint[]>([]);
-//     const [caseText, setCaseText] = useState<string>(sampleCaseText);
-
-//     const handleAnalyze = () => {
-//         setIsLoading(true);
-//         setResult([]);
-//         setTimeout(() => {
-//             setResult(sampleCaseAnalysis);
-//             setIsLoading(false);
-//         }, 1500);
-//     };
-
-//     return (
-//         <main className="flex flex-col items-center min-h-screen p-4 bg-slate-900 text-white">
-//             <div className="w-full max-w-6xl mx-auto px-4 py-12">
-//             <Link href="/" className="inline-flex items-center mb-6 text-sky-400 hover:underline">
-//                 <ArrowLeftIcon className="w-5 h-5 mr-2" />
-//                 Back to Home
-//             </Link>
-//                 <div className="text-center mb-12">
-//                     <h1 className="text-4xl font-bold text-white">AI Legal Advisor</h1>
-//                     <p className="text-lg text-slate-300 mt-2">Describe your personal situation, and our AI will highlight relevant legal points for your specific case.</p>
-//                 </div>
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-//                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50 flex flex-col">
-//                         <h2 className="text-2xl font-semibold text-white mb-4">Your Case/Story</h2>
-//                         <textarea
-//                             value={caseText}
-//                             onChange={(e) => setCaseText(e.target.value)}
-//                             className="w-full flex-grow h-80 bg-slate-900 border border-slate-700 rounded-lg p-4 text-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none transition-shadow"
-//                             placeholder="Describe your situation in detail here. For example: 'My boss fired me without notice or paying my last month's salary...'"
-//                         ></textarea>
-//                         <button onClick={handleAnalyze} disabled={isLoading || !caseText} className="mt-6 w-full bg-sky-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-sky-500 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors">
-//                             {isLoading ? 'Analyzing...' : 'Analyze My Case'}
-//                         </button>
-//                     </div>
-//                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
-//                          <h2 className="text-2xl font-semibold text-white mb-4">Legal Analysis</h2>
-//                          <div className="w-full h-[26rem] bg-slate-900 border border-slate-700 rounded-lg p-4 text-slate-300 overflow-y-auto">
-//                             {isLoading && <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-400"></div></div>}
-                            
-//                             {!isLoading && result.length > 0 && (
-//                                  <div className="space-y-3">
-//                                     {result.map((item, index) => (
-//                                         <div key={index} className="bg-slate-800/60 p-4 rounded-lg border border-slate-700/70 flex items-start gap-4">
-//                                             {item.type === 'point' && <GavelIcon className="w-6 h-6 text-sky-400 mt-1 flex-shrink-0" />}
-//                                             {item.type === 'recommendation' && <AlertTriangleIcon className="w-6 h-6 text-amber-400 mt-1 flex-shrink-0" />}
-//                                             <div>
-//                                                 <h4 className="font-bold text-white">{item.title}</h4>
-//                                                 <p className="text-slate-300">{item.text}</p>
-//                                             </div>
-//                                         </div>
-//                                     ))}
-//                                 </div>
-//                             )}
-
-//                             {!isLoading && result.length === 0 && (
-//                                 <div className="text-slate-500 flex items-center justify-center h-full">
-//                                     Your analysis will appear here.
-//                                 </div>
-//                             )}
-//                         </div>
-//                     </div>
-//                 </div>
-//             </div>
-//         </main>
-//     );
-// }
-
-
-
-
 'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeftIcon } from '@heroicons/react/24/solid';  
+import {
+  ArrowLeft,
+  Gavel,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle,
+  Scale
+} from "lucide-react";
 
 // --- Type Definitions ---
 interface CaseAnalysisPoint {
@@ -127,48 +22,6 @@ interface ApiResponse {
   analysis_points?: CaseAnalysisPoint[];
   error?: string;
 }
-
-// --- SVG Icons ---
-const GavelIcon = ({ className }: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14.5 12.5 12 15l-3-3-2 2L10 17l.5.5L14 14l3 3 2.5-2.5-2-2Z"></path>
-        <path d="m16 16 6-6"></path>
-        <path d="m8 8-6 6"></path>
-        <path d="m9 7 4-4 6 6-4 4-1-1"></path>
-        <path d="M15 13l-1.5-1.5"></path>
-    </svg>
-);
-
-const AlertTriangleIcon = ({ className }: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
-        <path d="M12 9v4"></path>
-        <path d="M12 17h.01"></path>
-    </svg>
-);
-
-const AlertCircleIcon = ({ className }: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-    </svg>
-);
-
-const CheckCircleIcon = ({ className }: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-    </svg>
-);
-
-const ScaleIcon = ({ className }: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 11V7a4 4 0 0 0-8 0v4"></path>
-        <path d="M3 11l18 0"></path>
-        <path d="M21 11l-4 7H7l-4-7"></path>
-    </svg>
-);
 
 // --- Sample Data ---
 const sampleCaseText = `My landlord is trying to evict me from my apartment. He gave me a notice that says I have to leave in 7 days, but my lease agreement says he needs to give 30 days' notice. He also shut off the water to my apartment yesterday to try and force me out. I have always paid my rent on time. What can I do?`;
@@ -248,7 +101,7 @@ export default function AIAdvisorPage() {
         <main className="flex flex-col items-center min-h-screen p-4 bg-slate-900 text-white">
             <div className="w-full max-w-6xl mx-auto px-4 py-12">
                 <Link href="/" className="inline-flex items-center mb-6 text-sky-400 hover:underline">
-                    <ArrowLeftIcon className="w-5 h-5 mr-2" />
+                    <ArrowLeft className="w-5 h-5 mr-2" />
                     Back to Home
                 </Link>
 
@@ -260,7 +113,7 @@ export default function AIAdvisorPage() {
                 {/* Error Alert */}
                 {error && (
                     <div className="mb-6 bg-red-900/50 border border-red-700 rounded-lg p-4 flex items-start gap-3">
-                        <AlertCircleIcon className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+                        <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
                         <div className="flex-grow">
                             <h3 className="font-semibold text-red-300">Error</h3>
                             <p className="text-red-200">{error}</p>
@@ -341,7 +194,7 @@ export default function AIAdvisorPage() {
                                     {/* Success Header */}
                                     <div className="mb-4 p-3 bg-green-900/30 border border-green-700/50 rounded-lg">
                                         <div className="flex items-center gap-2">
-                                            <CheckCircleIcon className="w-5 h-5 text-green-400" />
+                                            <CheckCircle className="w-5 h-5 text-green-400" />
                                             <p className="text-green-300 text-sm">
                                                 ✓ Found {getAnalysisStats().points} legal point{getAnalysisStats().points !== 1 ? 's' : ''} and {getAnalysisStats().recommendations} recommendation{getAnalysisStats().recommendations !== 1 ? 's' : ''} for your case
                                             </p>
@@ -354,11 +207,11 @@ export default function AIAdvisorPage() {
                                                 <div className="flex-shrink-0">
                                                     {item.type === 'point' ? (
                                                         <div className="w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center">
-                                                            <ScaleIcon className="w-4 h-4 text-white" />
+                                                            <Scale className="w-4 h-4 text-white" />
                                                         </div>
                                                     ) : (
                                                         <div className="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center">
-                                                            <AlertTriangleIcon className="w-4 h-4 text-white" />
+                                                            <AlertTriangle className="w-4 h-4 text-white" />
                                                         </div>
                                                     )}
                                                 </div>
@@ -384,7 +237,7 @@ export default function AIAdvisorPage() {
                             {!isLoading && result.length === 0 && !error && (
                                 <div className="text-slate-500 flex flex-col items-center justify-center h-full gap-3">
                                     <div className="w-16 h-16 border-2 border-slate-600 rounded-full flex items-center justify-center">
-                                        <GavelIcon className="w-8 h-8 text-slate-600" />
+                                        <Gavel className="w-8 h-8 text-slate-600" />
                                     </div>
                                     <p className="text-center">Your legal analysis will appear here.</p>
                                     <p className="text-sm text-slate-600 text-center">Describe your situation and click &apos;Analyze My Case&apos; to get started.</p>
@@ -428,7 +281,7 @@ export default function AIAdvisorPage() {
                 {result.length > 0 && (
                     <div className="mt-8 bg-amber-900/20 border border-amber-700/30 rounded-lg p-6">
                         <div className="flex items-start gap-3">
-                            <AlertTriangleIcon className="w-6 h-6 text-amber-400 flex-shrink-0 mt-1" />
+                            <AlertTriangle className="w-6 h-6 text-amber-400 flex-shrink-0 mt-1" />
                             <div>
                                 <h4 className="font-semibold text-amber-300 mb-2">Important Legal Disclaimer</h4>
                                 <p className="text-amber-200 text-sm leading-relaxed">
