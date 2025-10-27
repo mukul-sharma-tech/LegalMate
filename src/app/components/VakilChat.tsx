@@ -55,7 +55,7 @@ export default function VakilChat({ documentText }: VakilChatProps) { // <-- CHA
                 }
 
                 setMessages([{ sender: 'vakil', text: introText }]);
-            } catch (err) {
+            } catch  {
                 setMessages([{ sender: 'vakil', text: "Hello! I'm ready to answer questions about your document." }]);
             } finally {
                 setIsLoading(false);
@@ -89,7 +89,7 @@ export default function VakilChat({ documentText }: VakilChatProps) { // <-- CHA
             if (data.error) throw new Error(data.error);
 
             setMessages(prev => [...prev, { sender: 'vakil', text: data.answer }]);
-        } catch (err) {
+        } catch  {
             setMessages(prev => [...prev, { sender: 'vakil', text: "Sorry, I ran into an error trying to answer that." }]);
         } finally {
             setIsLoading(false);

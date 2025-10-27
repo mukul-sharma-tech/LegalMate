@@ -3,7 +3,7 @@
 import React, { Suspense, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
-
+import * as THREE from 'three';
 // --- Type Definitions ---
 type FeaturePage = '/simplifier' | '/rights' | '/advisor' | '/lawyers'; // <-- ADDED /lawyers
 
@@ -42,8 +42,8 @@ const UsersIcon = ({ className }: { className?: string }) => (
 
 // --- 3D STARFIELD COMPONENT ---
 function Starfield() {
-    const ref = useRef<any>();
-    useFrame((state, delta) => {
+    const ref = useRef<THREE.Group>(null);
+    useFrame((_state, delta) => {
         if (ref.current) {
             ref.current.rotation.x -= delta / 10;
             ref.current.rotation.y -= delta / 15;
