@@ -3,15 +3,16 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, UploadCloud, CheckCircle, AlertCircle } from "lucide-react";
+import VakilChat from '../components/VakilChat';
 
 // --- Type Definitions ---
 interface SimplifiedPoint {
-  title: string;
-  text: string;
+    title: string;
+    text: string;
 }
 interface ApiResponse {
-  summary_points?: SimplifiedPoint[];
-  error?: string;
+    summary_points?: SimplifiedPoint[];
+    error?: string;
 }
 
 export default function DocumentSimplifierPage() {
@@ -21,6 +22,11 @@ export default function DocumentSimplifierPage() {
     const [text, setText] = useState<string>('');
     const [error, setError] = useState<string>('');
 
+    // --- 2. ADD NEW STATE FOR THE CHAT ---
+    const [showChat, setShowChat] = useState<boolean>(false);
+    // We store the text separately for the chat, so user can clear the textarea
+    const [chatDocumentText, setChatDocumentText] = useState<string>('');
+
     const handleSimplify = async () => {
         if (!text.trim()) {
             setError('Please enter some text or upload a PDF to simplify.');
@@ -29,16 +35,30 @@ export default function DocumentSimplifierPage() {
         setIsLoading(true);
         setResult([]);
         setError('');
+        setShowChat(false); // Close chat on new simplification
+        
+        const documentToSimplify = text.trim();
+
         try {
+            // const response = await fetch('https://legalmate-a36k.onrender.com/api/simplify', {
             const response = await fetch('https://legalmate-a36k.onrender.com/api/simplify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: text.trim() })
+                body: JSON.stringify({ text: documentToSimplify })
             });
+            
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
             const data: ApiResponse = await response.json();
+            
             if (data.error) throw new Error(data.error);
-            if (data.summary_points) { setResult(data.summary_points); }
+            
+            if (data.summary_points) { 
+                setResult(data.summary_points);
+                // --- 3. ON SUCCESS, SHOW THE CHAT ---
+                setChatDocumentText(documentToSimplify); // Save the doc for the chat
+                setShowChat(true); // Open the chat window
+            }
             else { throw new Error('Invalid response format'); }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unknown error occurred.');
@@ -60,11 +80,13 @@ export default function DocumentSimplifierPage() {
         setError('');
         setResult([]);
         setText('');
+        setShowChat(false); // Close chat on new upload
 
         const formData = new FormData();
         formData.append('pdf', file);
 
         try {
+            // NOTE: You still need to create this /api/extract-pdf endpoint!
             const response = await fetch('/api/extract-pdf', {
                 method: 'POST',
                 body: formData,
@@ -76,12 +98,12 @@ export default function DocumentSimplifierPage() {
                 throw new Error(data.error || 'Failed to extract text from PDF.');
             }
 
-            setText(data.text); // Set the textarea with the extracted text from the server
+            setText(data.text);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unknown error occurred during PDF processing.');
         } finally {
             setIsProcessingPdf(false);
-            if (event.target) event.target.value = ''; // Allow re-uploading the same file
+            if (event.target) event.target.value = '';
         }
     };
 
@@ -90,14 +112,14 @@ export default function DocumentSimplifierPage() {
     return (
         <main className="flex flex-col items-center min-h-screen p-4 bg-slate-900 text-white">
             <div className="w-full max-w-6xl mx-auto px-4 py-12">
-                 <Link href="/" className="inline-flex items-center mb-6 text-sky-400 hover:underline">
+                <Link href="/" className="inline-flex items-center mb-6 text-sky-400 hover:underline">
                     <ArrowLeft className="w-5 h-5 mr-2" />
                     Back to Home
                 </Link>
 
                 <div className="text-center mb-12">
-                     <h1 className="text-4xl font-bold text-white">Legal Document Simplifier</h1>
-                     <p className="text-lg text-slate-300 mt-2">Paste your complex legal text or upload a PDF to get a simple summary.</p>
+                    <h1 className="text-4xl font-bold text-white">Legal Document Simplifier</h1>
+                    <p className="text-lg text-slate-300 mt-2">Paste your complex legal text or upload a PDF to get a simple summary.</p>
                 </div>
 
                 {error && (
@@ -114,7 +136,8 @@ export default function DocumentSimplifierPage() {
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50 flex flex-col">
+                    {/* --- Original Document Column --- */}
+                    <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50 flex flex-col">
                         <h2 className="text-2xl font-semibold text-white mb-4">Original Document</h2>
                         <div className="flex-grow flex flex-col">
                             <textarea
@@ -132,7 +155,7 @@ export default function DocumentSimplifierPage() {
                                 ) : (
                                     <><UploadCloud className="w-6 h-6" />Upload PDF</>
                                 )}
-                                <input type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" disabled={isProcessingPdf}/>
+                                <input type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" disabled={isProcessingPdf} />
                             </label>
                         </div>
                         <button onClick={handleSimplify} disabled={isLoading || isProcessingPdf || !text.trim()} className="mt-6 w-full bg-sky-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-sky-500 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors">
@@ -140,6 +163,7 @@ export default function DocumentSimplifierPage() {
                         </button>
                     </div>
 
+                    {/* --- Simplified Summary Column --- */}
                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
                         <h2 className="text-2xl font-semibold text-white mb-4">Simplified Summary</h2>
                         <div className="w-full h-[30rem] bg-slate-900 border border-slate-700 rounded-lg p-4 text-slate-300 overflow-y-auto">
@@ -164,12 +188,19 @@ export default function DocumentSimplifierPage() {
                                 <div className="text-slate-500 flex flex-col items-center justify-center h-full gap-3">
                                     <div className="w-16 h-16 border-2 border-slate-600 rounded-full flex items-center justify-center"><CheckCircle className="w-8 h-8 text-slate-600" /></div>
                                     <p className="text-center">Your simplified summary will appear here.</p><p className="text-sm text-slate-600 text-center">Enter some legal text and click &quot;Simplify Text&quot; to get started.</p>
-                                </div>
+m                                </div>
                             )}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* --- 4. RENDER THE CHAT COMPONENT --- */}
+            {showChat && (
+                <VakilChat 
+                    documentText={chatDocumentText} 
+                />
+            )}
         </main>
     );
 }
