@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
 import connectDB from '@/lib/db';
-import Review from '@/lib/models/Review';
-import Lawyer from '@/lib/models/Lawyer';
-import { handleApiError, createSuccessResponse, createErrorResponse } from '@/lib/utils/errorHandler';
+import Lawyer from '@/lib/models/lawyer';
+import Review from '@/lib/models/review';
+import { createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/utils/errorHandler';
+import { NextRequest } from 'next/server';
 
 // GET all reviews for a specific lawyer
 export async function GET(
@@ -13,7 +13,8 @@ export async function GET(
     await connectDB();
 
     // Check if lawyer exists
-    const lawyer = await Lawyer.findById(params.id);
+        const p=await params
+    const lawyer = await Lawyer.findById(p.id);
 
     if (!lawyer) {
       return createErrorResponse('Lawyer not found', 404);
@@ -25,7 +26,7 @@ export async function GET(
 
     // Get reviews for this lawyer
     const reviews = await Review.find({ 
-      lawyerId: params.id,
+      lawyerId: p.id,
       isVisible: true 
     })
       .populate('clientId', 'firstName lastName profileImage')
@@ -35,13 +36,13 @@ export async function GET(
       .lean();
 
     const total = await Review.countDocuments({ 
-      lawyerId: params.id,
+      lawyerId: p.id,
       isVisible: true 
     });
 
     // Calculate rating distribution
     const allReviews = await Review.find({ 
-      lawyerId: params.id,
+      lawyerId: p.id,
       isVisible: true 
     }).select('rating');
 

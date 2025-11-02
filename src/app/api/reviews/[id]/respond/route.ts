@@ -1,9 +1,9 @@
+import connectDB from '@/lib/db';
+import Lawyer from '@/lib/models/lawyer';
+import Review from '@/lib/models/review';
+import { createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/utils/errorHandler';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
-import connectDB from '@/lib/db';
-import Review from '@/lib/models/Review';
-import Lawyer from '@/lib/models/Lawyer';
-import { handleApiError, createSuccessResponse, createErrorResponse } from '@/lib/utils/errorHandler';
 
 // POST - Lawyer responds to review
 export async function POST(

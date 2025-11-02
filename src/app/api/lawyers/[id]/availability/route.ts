@@ -1,8 +1,8 @@
+import connectDB from '@/lib/db';
+import Lawyer from '@/lib/models/lawyer';
+import { createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/utils/errorHandler';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
-import connectDB from '@/lib/db';
-import Lawyer from '@/lib/models/Lawyer';
-import { handleApiError, createSuccessResponse, createErrorResponse } from '@/lib/utils/errorHandler';
 
 // GET lawyer availability
 export async function GET(
@@ -11,8 +11,8 @@ export async function GET(
 ) {
   try {
     await connectDB();
-
-    const lawyer = await Lawyer.findById(params.id).select('availability');
+    const paramid=await params.id
+    const lawyer = await Lawyer.findById(paramid).select('availability');
 
     if (!lawyer) {
       return createErrorResponse('Lawyer not found', 404);
@@ -37,8 +37,8 @@ export async function PATCH(
     }
 
     await connectDB();
-
-    const lawyer = await Lawyer.findById(params.id);
+    const paramid=await params.id
+    const lawyer = await Lawyer.findById(paramid);
 
     if (!lawyer) {
       return createErrorResponse('Lawyer not found', 404);

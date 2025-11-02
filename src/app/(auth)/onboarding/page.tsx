@@ -60,7 +60,7 @@ export default function OnboardingPage() {
               Welcome to Legal Mate
             </h1>
             <p className="text-lg text-gray-600">
-              Let's get you set up. Choose your account type
+              Lets get you set up. Choose your account type
             </p>
           </div>
 
@@ -72,7 +72,7 @@ export default function OnboardingPage() {
             >
               <UserCircle className="h-16 w-16 text-blue-900 mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                I'm a Client
+                I m a Client
               </h3>
               <p className="text-gray-600 mb-4">
                 Looking for legal assistance and want to connect with experienced lawyers
@@ -92,7 +92,7 @@ export default function OnboardingPage() {
             >
               <Briefcase className="h-16 w-16 text-blue-900 mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                I'm a Lawyer
+                I m a Lawyer
               </h3>
               <p className="text-gray-600 mb-4">
                 Offering legal services and want to connect with clients

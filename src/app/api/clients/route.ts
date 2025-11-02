@@ -1,9 +1,9 @@
+import connectDB from '@/lib/db';
+import Client from '@/lib/models/client';
+import User from '@/lib/models/user';
+import { createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/utils/errorHandler';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
-import connectDB from '@/lib/db';
-import Client from '@/lib/models/Client';
-import User from '@/lib/models/User';
-import { handleApiError, createSuccessResponse, createErrorResponse } from '@/lib/utils/errorHandler';
 
 // GET current client profile
 export async function GET(req: NextRequest) {

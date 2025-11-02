@@ -1,76 +1,99 @@
-'use client';
-
-import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Scale, Star } from 'lucide-react';
-import Image from "next/image";
-// This is the (fake) data structure we'll use for now
-export interface Lawyer {
-    id: string;
-    name: string;
-    specialization: string;
-    bio: string;
-    ratePerSlot: number;
-    isVerified: boolean;
-    rating: number; // Example property
-    reviewCount: number; // Example property
-    imageUrl: string; // Example property
-}
+import { Star, Briefcase, MapPin, Globe } from 'lucide-react';
+import Image from 'next/image';
 
 interface LawyerCardProps {
-    lawyer: Lawyer;
+  lawyer: any;
 }
 
 export default function LawyerCard({ lawyer }: LawyerCardProps) {
-    return (
-        <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50 shadow-lg hover:border-sky-500/50 hover:bg-slate-800 transition-all duration-300 flex flex-col">
+  const user = lawyer.userId;
 
-            <div className="flex items-start gap-4 mb-4">
-
-                <Image
-                    src={lawyer.imageUrl}
-                    alt={lawyer.name}
-                    width={80} // 20 * 4 = 80px (Tailwind's w-20)
-                    height={80} // 20 * 4 = 80px (Tailwind's h-20)
-                    className="rounded-full border-2 border-sky-500 object-cover"
-                />
-                <div className="flex-grow">
-                    <h3 className="text-2xl font-semibold text-white mb-1">{lawyer.name}</h3>
-                    {lawyer.isVerified && (
-                        <div className="flex items-center gap-1.5 text-xs text-green-400 mb-2">
-                            <ShieldCheck className="w-4 h-4" />
-                            Verified Professional
-                        </div>
-                    )}
-                    <div className="flex items-center gap-1.5 text-sm text-sky-300">
-                        <Scale className="w-4 h-4" />
-                        {lawyer.specialization}
-                    </div>
-                </div>
+  return (
+    <Link href={`/lawyers/${lawyer._id}`}>
+      <div className="legal-card p-6 hover:border-blue-900 transition-all cursor-pointer h-full">
+        {/* Profile */}
+        <div className="flex items-start space-x-4 mb-4">
+          <div className="relative h-16 w-16 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+            {user?.profileImage ? (
+              <></>
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-2xl font-bold text-gray-600">
+                {user?.firstName?.[0]}{user?.lastName?.[0]}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-bold text-gray-900 truncate">
+              {user?.firstName} {user?.lastName}
+            </h3>
+            <div className="flex items-center space-x-1 mt-1">
+              <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+              <span className="text-sm font-medium text-gray-900">
+                {lawyer.averageRating.toFixed(1)}
+              </span>
+              <span className="text-sm text-gray-500">
+                ({lawyer.totalReviews} reviews)
+              </span>
             </div>
-
-            <p className="text-slate-400 flex-grow mb-4 text-sm leading-relaxed">
-                {lawyer.bio.substring(0, 100)}...
-            </p>
-
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-1 text-amber-400">
-                    <Star className="w-5 h-5 fill-amber-400" />
-                    <span className="font-bold text-white">{lawyer.rating.toFixed(1)}</span>
-                    <span className="text-slate-400 text-sm">({lawyer.reviewCount} reviews)</span>
-                </div>
-                <div className="text-right">
-                    <span className="text-2xl font-bold text-white">₹{lawyer.ratePerSlot}</span>
-                    <span className="text-slate-400 text-sm">/ 30 min</span>
-                </div>
-            </div>
-
-            <Link
-                href={`/lawyers/${lawyer.id}`}
-                className="w-full mt-auto bg-sky-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-sky-500 transition-colors block text-center"
-            >
-                View Profile & Book
-            </Link>
+          </div>
         </div>
-    );
+
+        {/* Specializations */}
+        <div className="mb-4">
+          <div className="flex flex-wrap gap-2">
+            {lawyer.specializations.slice(0, 2).map((spec: string) => (
+              <span
+                key={spec}
+                className="px-3 py-1 bg-blue-50 text-blue-900 text-xs font-medium rounded-full"
+              >
+                {spec}
+              </span>
+            ))}
+            {lawyer.specializations.length > 2 && (
+              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                +{lawyer.specializations.length - 2} more
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Info */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center text-sm text-gray-600">
+            <Briefcase className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span>{lawyer.yearsOfExperience} years experience</span>
+          </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <Globe className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="truncate">
+              {lawyer.languagesSpoken.slice(0, 2).join(', ')}
+              {lawyer.languagesSpoken.length > 2 && ` +${lawyer.languagesSpoken.length - 2}`}
+            </span>
+          </div>
+        </div>
+
+        {/* About */}
+        <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+          {lawyer.about}
+        </p>
+
+        {/* Fees */}
+        <div className="border-t pt-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-xs text-gray-500">Starting from</p>
+              <p className="text-lg font-bold text-blue-900">
+                {lawyer.fees.currency === 'INR' ? '₹' : '$'}{lawyer.fees.perHalfHour}
+                <span className="text-sm font-normal text-gray-600">/30 min</span>
+              </p>
+            </div>
+            <button className="legal-button text-sm px-4 py-2">
+              Book Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
 }

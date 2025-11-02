@@ -1,10 +1,10 @@
+import connectDB from '@/lib/db';
+import Client from '@/lib/models/client';
+import Lawyer from '@/lib/models/lawyer';
+import User from '@/lib/models/user';
+import { createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/utils/errorHandler';
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
-import connectDB from '@/lib/db';
-import User from '@/lib/models/user';
-import Lawyer from '@/lib/models/lawyer';
-import Client from '@/lib/models/client';
-import { handleApiError, createSuccessResponse, createErrorResponse } from '@/lib/utils/errorHandler';
 
 export async function POST(req: NextRequest) {
   try {

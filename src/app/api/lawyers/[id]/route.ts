@@ -1,9 +1,8 @@
+import connectDB from '@/lib/db';
+import { User, Lawyer } from '@/lib/models';
+import { createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/utils/errorHandler';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
-import connectDB from '@/lib/db';
-import Lawyer from '@/lib/models/Lawyer';
-import User from '@/lib/models/User';
-import { handleApiError, createSuccessResponse, createErrorResponse } from '@/lib/utils/errorHandler';
 
 // GET single lawyer by ID
 export async function GET(
@@ -12,10 +11,13 @@ export async function GET(
 ) {
   try {
     await connectDB();
-
-    const lawyer = await Lawyer.findById(params.id)
+    const p=await params
+    console.log(p)
+    const lawyer = await Lawyer.findById(p.id)
       .populate('userId', 'firstName lastName email profileImage phone')
       .lean();
+
+      console.log(lawyer)
 
     if (!lawyer) {
       return createErrorResponse('Lawyer not found', 404);
@@ -40,8 +42,8 @@ export async function PATCH(
     }
 
     await connectDB();
-
-    const lawyer = await Lawyer.findById(params.id);
+ const p=await params
+    const lawyer = await Lawyer.findById(p.id);
 
     if (!lawyer) {
       return createErrorResponse('Lawyer not found', 404);
@@ -56,7 +58,7 @@ export async function PATCH(
 
     // Update lawyer profile
     const updatedLawyer = await Lawyer.findByIdAndUpdate(
-      params.id,
+      p.id,
       { $set: body },
       { new: true, runValidators: true }
     ).populate('userId', 'firstName lastName email profileImage');
@@ -80,8 +82,8 @@ export async function DELETE(
     }
 
     await connectDB();
-
-    const lawyer = await Lawyer.findById(params.id);
+    const p=await params
+    const lawyer = await Lawyer.findById(pid);
 
     if (!lawyer) {
       return createErrorResponse('Lawyer not found', 404);

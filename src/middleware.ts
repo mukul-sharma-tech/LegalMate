@@ -7,18 +7,23 @@ const isPublicRoute = createRouteMatcher([
   '/sign-up(.*)',
   '/lawyers',
   '/lawyers/(.*)',
-  '/api/webhooks/(.*)',
-  '/api/auth/onboarding(.*)', // Allow onboarding API - FIXED PATH
-  '/api/user/onboarding(.*)' // Keep both for compatibility
+  '/api/webhooks/(.*)'
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding']);
 
+const isApiRoute = createRouteMatcher(['/api(.*)']);
+
 export default clerkMiddleware(async (auth, req) => {
-  const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
   // Allow public routes
   if (isPublicRoute(req)) {
+    return NextResponse.next();
+  }
+
+  // Allow all API routes (they handle their own auth)
+  if (isApiRoute(req)) {
     return NextResponse.next();
   }
 
@@ -30,19 +35,13 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   // Allow onboarding route for authenticated users
+  // The onboarding page itself will check DB and redirect if already completed
   if (isOnboardingRoute(req)) {
     return NextResponse.next();
   }
 
-  // Check if user has completed onboarding using metadata
-  // We'll use Clerk's public metadata to store onboarding status
-  const metadata = sessionClaims?.metadata as { onboardingCompleted?: boolean } | undefined;
-  
-  if (!metadata?.onboardingCompleted) {
-    // Redirect to onboarding if not completed
-    return NextResponse.redirect(new URL('/onboarding', req.url));
-  }
-
+  // For all other protected routes, allow access
+  // Each dashboard page will check onboarding status from DB
   return NextResponse.next();
 });
 

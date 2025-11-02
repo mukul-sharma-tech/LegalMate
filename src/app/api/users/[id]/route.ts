@@ -1,8 +1,8 @@
+import connectDB from '@/lib/db';
+import User from '@/lib/models/user';
+import { createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/utils/errorHandler';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
-import connectDB from '@/lib/db';
-import User from '@/lib/models/User';
-import { handleApiError, createSuccessResponse, createErrorResponse } from '@/lib/utils/errorHandler';
 
 // GET user by ID
 export async function GET(
