@@ -4,6 +4,7 @@ import React, { Suspense, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import * as THREE from 'three';
+import Navbar from '@/components/layout/Navbar';
 // --- Type Definitions ---
 type FeaturePage = '/simplifier' | '/rights' | '/advisor' | '/lawyers'; // <-- ADDED /lawyers
 
@@ -102,6 +103,7 @@ export default function HomePage() {
 
             {/* --- YOUR ORIGINAL CONTENT --- */}
             <main className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 text-white">
+                <Navbar/>
                 <div className="w-full max-w-5xl mx-auto py-12 md:py-20 text-center">
                     <div className="flex justify-center items-center gap-3 mb-4">
                         <ScaleIcon className="w-12 h-12 text-sky-400" />
