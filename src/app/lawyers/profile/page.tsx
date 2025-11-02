@@ -1,410 +1,284 @@
-// app/lawyer/profile/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/layout/Navbar';
+import { Search, Filter, Star, MapPin, Briefcase, Languages } from 'lucide-react';
+import { ILawyerProfile } from '@/types/models';
 
-interface Education {
-  degree: string;
-  university: string;
-  yearOfGraduation: number;
-}
-
-interface LawyerProfile {
-  _id: string;
-  barRegistrationNumber: string;
-  yearsOfExperience: number;
-  specializations: string[];
-  languagesSpoken: string[];
-  education: Education[];
-  about: string;
-  fees: {
-    perHour: number;
-    perHalfHour: number;
-  };
-}
-
-const SPECIALIZATIONS = [
-  'Criminal Law',
-  'Civil Law',
-  'Corporate Law',
-  'Family Law',
-  'Tax Law',
-  'Property Law',
-  'Labor Law',
-  'Constitutional Law',
-  'Intellectual Property',
-  'Immigration Law'
-];
-
-const LANGUAGES = ['English', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Marathi', 'Gujarati', 'Kannada', 'Malayalam', 'Punjabi'];
-
-export default function LawyerProfileEditPage() {
+export default function LawyersListingPage() {
   const router = useRouter();
+  const [lawyers, setLawyers] = useState<ILawyerProfile[]>([]);
+  const [filteredLawyers, setFilteredLawyers] = useState<ILawyerProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState<LawyerProfile | null>(null);
+  
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSpecialization, setSelectedSpecialization] = useState('');
+  const [minRating, setMinRating] = useState(0);
+  const [sortBy, setSortBy] = useState<'rating' | 'experience' | 'price'>('rating');
 
   useEffect(() => {
-    fetchProfile();
+    fetchLawyers();
   }, []);
 
-  const fetchProfile = async () => {
+  useEffect(() => {
+    filterLawyers();
+  }, [lawyers, searchQuery, selectedSpecialization, minRating, sortBy]);
+
+  const fetchLawyers = async () => {
     try {
-      const response = await fetch('/api/lawyer/profile');
+      const response = await fetch('/api/lawyers');
       const data = await response.json();
-      if (data.success) {
-        setProfile(data.data);
+      
+      if (response.ok) {
+        setLawyers(data.data);
+        setFilteredLawyers(data.data);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error fetching lawyers:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profile) return;
-    
-    setSaving(true);
-    try {
-      const response = await fetch(`/api/lawyers/${profile._id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profile)
+  const filterLawyers = () => {
+    let filtered = [...lawyers];
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(lawyer => {
+        const user = typeof lawyer.userId === 'object' ? lawyer.userId : null;
+        const fullName = user ? `${user.firstName} ${user.lastName}`.toLowerCase() : '';
+        const specs = lawyer.specializations.join(' ').toLowerCase();
+        const query = searchQuery.toLowerCase();
+        
+        return fullName.includes(query) || specs.includes(query);
       });
-
-      const data = await response.json();
-
-      if (data.success) {
-        alert('Profile updated successfully!');
-        router.push('/dashboard/lawyer');
-      } else {
-        alert(data.message || 'Failed to update profile');
-      }
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      alert('Failed to update profile');
-    } finally {
-      setSaving(false);
     }
-  };
 
-  const addEducation = () => {
-    if (!profile) return;
-    setProfile({
-      ...profile,
-      education: [...profile.education, { degree: '', university: '', yearOfGraduation: new Date().getFullYear() }]
+    // Specialization filter
+    if (selectedSpecialization) {
+      filtered = filtered.filter(lawyer =>
+        lawyer.specializations.some(spec => 
+          spec.toLowerCase().includes(selectedSpecialization.toLowerCase())
+        )
+      );
+    }
+
+    // Rating filter
+    if (minRating > 0) {
+      filtered = filtered.filter(lawyer => lawyer.averageRating >= minRating);
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      if (sortBy === 'rating') {
+        return b.averageRating - a.averageRating;
+      } else if (sortBy === 'experience') {
+        return b.yearsOfExperience - a.yearsOfExperience;
+      } else {
+        return a.fees.perHour - b.fees.perHour;
+      }
     });
+
+    setFilteredLawyers(filtered);
   };
 
-  const removeEducation = (index: number) => {
-    if (!profile) return;
-    setProfile({
-      ...profile,
-      education: profile.education.filter((_, i) => i !== index)
+  const getAllSpecializations = () => {
+    const specs = new Set<string>();
+    lawyers.forEach(lawyer => {
+      lawyer.specializations.forEach(spec => specs.add(spec));
     });
+    return Array.from(specs).sort();
   };
 
-  const updateEducation = (index: number, field: keyof Education, value: any) => {
-    if (!profile) return;
-    const newEducation = [...profile.education];
-    newEducation[index] = { ...newEducation[index], [field]: value };
-    setProfile({ ...profile, education: newEducation });
-  };
-
-  const toggleSpecialization = (spec: string) => {
-    if (!profile) return;
-    const specializations = profile.specializations.includes(spec)
-      ? profile.specializations.filter(s => s !== spec)
-      : [...profile.specializations, spec];
-    setProfile({ ...profile, specializations });
-  };
-
-  const toggleLanguage = (lang: string) => {
-    if (!profile) return;
-    const languagesSpoken = profile.languagesSpoken.includes(lang)
-      ? profile.languagesSpoken.filter(l => l !== lang)
-      : [...profile.languagesSpoken, lang];
-    setProfile({ ...profile, languagesSpoken });
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex items-center">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-4 w-4 ${
+              star <= rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'
+            }`}
+          />
+        ))}
+      </div>
+    );
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-gray-500">Failed to load profile</p>
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-black text-white py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <button
-            onClick={() => router.push('/dashboard/lawyer')}
-            className="text-gray-400 hover:text-white mb-4"
-          >
-            ← Back to dashboard
-          </button>
-          <h1 className="text-4xl font-bold mb-2">Edit Profile</h1>
-          <p className="text-gray-400">Update your professional information</p>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Find a Lawyer</h1>
+          <p className="text-gray-600">
+            Browse through {lawyers.length} verified lawyers
+          </p>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">Basic Information</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bar Registration Number
-                </label>
-                <input
-                  type="text"
-                  value={profile.barRegistrationNumber}
-                  onChange={(e) => setProfile({ ...profile, barRegistrationNumber: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Years of Experience
-                </label>
-                <input
-                  type="number"
-                  value={profile.yearsOfExperience}
-                  onChange={(e) => setProfile({ ...profile, yearsOfExperience: parseInt(e.target.value) })}
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                About
-              </label>
-              <textarea
-                value={profile.about}
-                onChange={(e) => setProfile({ ...profile, about: e.target.value })}
-                rows={6}
-                maxLength={1000}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                required
+        {/* Search and Filters */}
+        <div className="legal-card p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name or specialization..."
+                className="legal-input pl-10"
               />
-              <p className="text-xs text-gray-500 mt-1">{profile.about.length}/1000 characters</p>
             </div>
-          </div>
 
-          {/* Fees */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">Consultation Fees</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Per Hour (₹)
-                </label>
-                <input
-                  type="number"
-                  value={profile.fees.perHour}
-                  onChange={(e) => setProfile({ 
-                    ...profile, 
-                    fees: { ...profile.fees, perHour: parseInt(e.target.value) }
-                  })}
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Per Half Hour (₹)
-                </label>
-                <input
-                  type="number"
-                  value={profile.fees.perHalfHour}
-                  onChange={(e) => setProfile({ 
-                    ...profile, 
-                    fees: { ...profile.fees, perHalfHour: parseInt(e.target.value) }
-                  })}
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Specializations */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">Specializations</h2>
-            <p className="text-sm text-gray-600 mb-4">Select all that apply</p>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {SPECIALIZATIONS.map((spec) => (
-                <button
-                  key={spec}
-                  type="button"
-                  onClick={() => toggleSpecialization(spec)}
-                  className={`px-4 py-2 rounded-lg border transition-colors ${
-                    profile.specializations.includes(spec)
-                      ? 'border-black bg-black text-white'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  {spec}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Languages */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">Languages Spoken</h2>
-            <p className="text-sm text-gray-600 mb-4">Select all languages you speak</p>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {LANGUAGES.map((lang) => (
-                <button
-                  key={lang}
-                  type="button"
-                  onClick={() => toggleLanguage(lang)}
-                  className={`px-4 py-2 rounded-lg border transition-colors ${
-                    profile.languagesSpoken.includes(lang)
-                      ? 'border-black bg-black text-white'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  {lang}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Education */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Education</h2>
-              <button
-                type="button"
-                onClick={addEducation}
-                className="text-sm text-black hover:underline"
+            {/* Specialization Filter */}
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <select
+                value={selectedSpecialization}
+                onChange={(e) => setSelectedSpecialization(e.target.value)}
+                className="legal-input pl-10"
               >
-                + Add Education
-              </button>
+                <option value="">All Specializations</option>
+                {getAllSpecializations().map(spec => (
+                  <option key={spec} value={spec}>{spec}</option>
+                ))}
+              </select>
             </div>
 
-            <div className="space-y-4">
-              {profile.education.map((edu, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-end mb-3">
-                    <button
-                      type="button"
-                      onClick={() => removeEducation(index)}
-                      className="text-sm text-red-600 hover:text-red-800"
-                    >
-                      Remove
-                    </button>
+            {/* Rating Filter */}
+            <select
+              value={minRating}
+              onChange={(e) => setMinRating(Number(e.target.value))}
+              className="legal-input"
+            >
+              <option value="0">All Ratings</option>
+              <option value="4">4+ Stars</option>
+              <option value="3">3+ Stars</option>
+              <option value="2">2+ Stars</option>
+            </select>
+
+            {/* Sort */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'rating' | 'experience' | 'price')}
+              className="legal-input"
+            >
+              <option value="rating">Highest Rated</option>
+              <option value="experience">Most Experienced</option>
+              <option value="price">Lowest Price</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Results */}
+        {filteredLawyers.length === 0 ? (
+          <div className="legal-card p-12 text-center">
+            <p className="text-gray-600 mb-4">No lawyers found matching your criteria</p>
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedSpecialization('');
+                setMinRating(0);
+              }}
+              className="text-blue-900 hover:underline"
+            >
+              Clear Filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredLawyers.map((lawyer) => {
+              const user = typeof lawyer.userId === 'object' ? lawyer.userId : null;
+
+              return (
+                <div
+                  key={lawyer._id.toString()}
+                  className="legal-card p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => router.push(`/lawyers/${lawyer._id.toString()}`)}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 mb-1">
+                        {user ? `${user.firstName} ${user.lastName}` : 'Lawyer'}
+                      </h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        {renderStars(Math.round(lawyer.averageRating))}
+                        <span className="text-sm text-gray-600">
+                          ({lawyer.totalReviews} reviews)
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Degree
-                      </label>
-                      <input
-                        type="text"
-                        value={edu.degree}
-                        onChange={(e) => updateEducation(index, 'degree', e.target.value)}
-                        placeholder="e.g., LLB, LLM"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                        required
-                      />
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Briefcase className="h-4 w-4 mr-2" />
+                      {lawyer.yearsOfExperience} years experience
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        University
-                      </label>
-                      <input
-                        type="text"
-                        value={edu.university}
-                        onChange={(e) => updateEducation(index, 'university', e.target.value)}
-                        placeholder="University name"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                        required
-                      />
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Languages className="h-4 w-4 mr-2" />
+                      {lawyer.languagesSpoken.slice(0, 2).join(', ')}
+                      {lawyer.languagesSpoken.length > 2 && ` +${lawyer.languagesSpoken.length - 2}`}
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Year of Graduation
-                      </label>
-                      <input
-                        type="number"
-                        value={edu.yearOfGraduation}
-                        onChange={(e) => updateEducation(index, 'yearOfGraduation', parseInt(e.target.value))}
-                        min="1950"
-                        max={new Date().getFullYear()}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                        required
-                      />
+                  {/* Specializations */}
+                  <div className="mb-4">
+                    <div className="flex flex-wrap gap-2">
+                      {lawyer.specializations.slice(0, 3).map((spec, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-blue-100 text-blue-900 text-xs rounded-full"
+                        >
+                          {spec}
+                        </span>
+                      ))}
+                      {lawyer.specializations.length > 3 && (
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                          +{lawyer.specializations.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Pricing */}
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">Starting from</p>
+                        <p className="text-lg font-bold text-blue-900">
+                          {lawyer.fees.currency === 'INR' ? '₹' : '$'}
+                          {lawyer.fees.perHalfHour}
+                          <span className="text-sm font-normal text-gray-600">/30 min</span>
+                        </p>
+                      </div>
+                      <button className="legal-button text-sm">
+                        View Profile
+                      </button>
                     </div>
                   </div>
                 </div>
-              ))}
-
-              {profile.education.length === 0 && (
-                <div className="text-center py-8 border border-gray-200 rounded-lg">
-                  <p className="text-gray-500 mb-2">No education added</p>
-                  <button
-                    type="button"
-                    onClick={addEducation}
-                    className="text-sm text-black hover:underline"
-                  >
-                    + Add your first education
-                  </button>
-                </div>
-              )}
-            </div>
+              );
+            })}
           </div>
-
-          {/* Submit */}
-          <div className="flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={() => router.push('/dashboard/lawyer')}
-              className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 font-medium"
-            >
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </form>
+        )}
       </div>
     </div>
   );

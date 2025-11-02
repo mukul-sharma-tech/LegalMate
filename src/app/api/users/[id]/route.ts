@@ -4,6 +4,14 @@ import { createErrorResponse, createSuccessResponse, handleApiError } from '@/li
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
 
+// Interface for the allowed fields in the update operation
+interface UserUpdates {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    profileImage?: string;
+}
+
 // GET user by ID
 export async function GET(
   req: NextRequest,
@@ -54,11 +62,13 @@ export async function PATCH(
 
     // Only allow certain fields to be updated
     const allowedUpdates = ['firstName', 'lastName', 'phone', 'profileImage'];
-    const updates: any = {};
+    // FIX: Replaced 'any' with the specific 'UserUpdates' interface
+    const updates: UserUpdates = {}; 
 
     for (const key of allowedUpdates) {
       if (body[key] !== undefined) {
-        updates[key] = body[key];
+        // TypeScript infers the type check from the UserUpdates interface and the string keys
+        updates[key as keyof UserUpdates] = body[key];
       }
     }
 

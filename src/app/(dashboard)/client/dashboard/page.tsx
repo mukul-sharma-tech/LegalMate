@@ -7,11 +7,12 @@ import Navbar from '@/components/layout/Navbar';
 import { Calendar, Clock, CheckCircle, XCircle, Search } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { IPopulatedBookingForClient } from '@/types/models';
 
 export default function ClientDashboard() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<IPopulatedBookingForClient[]>([]);
   const [stats, setStats] = useState({
     pending: 0,
     approved: 0,
@@ -53,10 +54,10 @@ export default function ClientDashboard() {
         
         // Calculate stats
         const stats = {
-          pending: data.data.filter((b: any) => b.status === 'pending').length,
-          approved: data.data.filter((b: any) => b.status === 'approved').length,
-          completed: data.data.filter((b: any) => b.status === 'completed').length,
-          cancelled: data.data.filter((b: any) => b.status === 'cancelled' || b.status === 'rejected').length
+          pending: data.data.filter((b: IPopulatedBookingForClient) => b.status === 'pending').length,
+          approved: data.data.filter((b: IPopulatedBookingForClient) => b.status === 'approved').length,
+          completed: data.data.filter((b: IPopulatedBookingForClient) => b.status === 'completed').length,
+          cancelled: data.data.filter((b: IPopulatedBookingForClient) => b.status === 'cancelled' || b.status === 'rejected').length
         };
         setStats(stats);
       }
@@ -179,34 +180,40 @@ export default function ClientDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {bookings.slice(0, 5).map((booking: any) => (
-                <div key={booking._id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-900 transition-colors">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-900 mb-1">
-                        {booking.lawyerId?.userId?.firstName} {booking.lawyerId?.userId?.lastName}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-2">
-                        {booking.sessionType.charAt(0).toUpperCase() + booking.sessionType.slice(1).replace('-', ' ')} - {booking.durationType === 'half-hour' ? '30 min' : '60 min'}
-                      </p>
+              {bookings.slice(0, 5).map((booking) => {
+                // Type guard to check if lawyerId is populated
+                const lawyer = typeof booking.lawyerId !== 'object' ? null : booking.lawyerId;
+                const lawyerUser = lawyer && typeof lawyer.userId === 'object' ? lawyer.userId : null;
+
+                return (
+                  <div key={booking._id.toString()} className="border border-gray-200 rounded-lg p-4 hover:border-blue-900 transition-colors">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-900 mb-1">
+                          {lawyerUser ? `${lawyerUser.firstName} ${lawyerUser.lastName}` : 'Lawyer Name Not Available'}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {booking.sessionType.charAt(0).toUpperCase() + booking.sessionType.slice(1).replace('-', ' ')} - {booking.durationType === 'half-hour' ? '30 min' : '60 min'}
+                        </p>
+                      </div>
+                      {getStatusBadge(booking.status)}
                     </div>
-                    {getStatusBadge(booking.status)}
+                    <div className="flex items-center text-sm text-gray-600 space-x-4">
+                      <span>📅 {format(new Date(booking.preferredDate), 'MMM dd, yyyy')}</span>
+                      <span>🕐 {booking.preferredTime}</span>
+                      <span>💰 {booking.currency === 'INR' ? '₹' : '$'}{booking.amount}</span>
+                    </div>
+                    {booking.status === 'completed' && (
+                      <Link 
+                        href={`/client/bookings/${booking._id.toString()}/review`}
+                        className="text-sm text-blue-900 hover:underline mt-2 inline-block"
+                      >
+                        Leave a Review
+                      </Link>
+                    )}
                   </div>
-                  <div className="flex items-center text-sm text-gray-600 space-x-4">
-                    <span>📅 {format(new Date(booking.preferredDate), 'MMM dd, yyyy')}</span>
-                    <span>🕐 {booking.preferredTime}</span>
-                    <span>💰 {booking.currency === 'INR' ? '₹' : '$'}{booking.amount}</span>
-                  </div>
-                  {booking.status === 'completed' && (
-                    <Link 
-                      href={`/client/bookings/${booking._id}/review`}
-                      className="text-sm text-blue-900 hover:underline mt-2 inline-block"
-                    >
-                      Leave a Review
-                    </Link>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

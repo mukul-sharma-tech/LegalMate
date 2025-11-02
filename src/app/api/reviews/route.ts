@@ -6,6 +6,13 @@ import User from '@/lib/models/user';
 import { createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/utils/errorHandler';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
+import { Types } from 'mongoose'; // Import Types for ObjectId
+
+// Define the interface for the Mongoose query object
+interface ReviewQuery {
+  isVisible: boolean;
+  lawyerId?: string | Types.ObjectId; // Allow string ID or ObjectId
+}
 
 // GET reviews (optionally filtered by lawyerId)
 export async function GET(req: NextRequest) {
@@ -15,7 +22,8 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const lawyerId = searchParams.get('lawyerId');
 
-    const query: any = { isVisible: true };
+    // FIX: Replaced 'any' with the specific 'ReviewQuery' interface
+    const query: ReviewQuery = { isVisible: true };
     
     if (lawyerId) {
       query.lawyerId = lawyerId;
@@ -86,7 +94,7 @@ export async function POST(req: NextRequest) {
     
     if (existingReview) {
       return createErrorResponse('Review already exists for this booking', 400);
-    }
+        }
 
     // Validate rating
     if (rating < 1 || rating > 5) {

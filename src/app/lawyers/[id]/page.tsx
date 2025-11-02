@@ -8,12 +8,18 @@ import BookingForm from '@/components/booking/BookingForm';
 import ReviewList from '@/components/review/ReviewList'; 
 import { Star, Briefcase, Award, Globe, GraduationCap, Mail, Phone } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { ILawyerProfile, IReviewModel, IUserModel } from '@/types/models';
+
+interface IPopulatedReview extends Omit<IReviewModel, 'clientId'> {
+  clientId: IUserModel;
+}
 
 export default function LawyerDetailPage() {
   const params = useParams();
   const { isSignedIn } = useUser();
-  const [lawyer, setLawyer] = useState<any>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [lawyer, setLawyer] = useState<ILawyerProfile | null>(null);
+  const [reviews, setReviews] = useState<IPopulatedReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [showBooking, setShowBooking] = useState(false);
 
@@ -41,7 +47,7 @@ export default function LawyerDetailPage() {
       const response = await fetch(`/api/lawyers/${params.id}/reviews`);
       const data = await response.json();
       if (response.ok) {
-        setReviews(data.data.reviews);
+        setReviews(data.data.reviews || data.data);
       }
     } catch (error) {
       console.error('Error fetching reviews:', error);
@@ -70,7 +76,7 @@ export default function LawyerDetailPage() {
     );
   }
 
-  const user = lawyer.userId;
+  const user = typeof lawyer.userId === 'object' ? lawyer.userId : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -172,7 +178,7 @@ export default function LawyerDetailPage() {
             <div className="legal-card p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Education</h2>
               <div className="space-y-4">
-                {lawyer.education.map((edu: any, index: number) => (
+                {lawyer.education.map((edu, index: number) => (
                   <div key={index} className="flex items-start space-x-3">
                     <GraduationCap className="h-5 w-5 text-blue-900 mt-1 flex-shrink-0" />
                     <div>
@@ -226,7 +232,7 @@ export default function LawyerDetailPage() {
                     </button>
                   ) : (
                     <BookingForm
-                      lawyerId={lawyer._id}
+                      lawyerId={lawyer._id.toString()}
                       onCancel={() => setShowBooking(false)}
                     />
                   )}
@@ -234,9 +240,9 @@ export default function LawyerDetailPage() {
               ) : (
                 <div className="text-center">
                   <p className="text-gray-600 mb-4">Sign in to book a consultation</p>
-                  <a href="/sign-in" className="legal-button block">
+                  <Link href="/sign-in" className="legal-button block">
                     Sign In
-                  </a>
+                  </Link>
                 </div>
               )}
 

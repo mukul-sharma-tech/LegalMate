@@ -1,12 +1,14 @@
+// app/bookings/[id]/complete/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { IPopulatedBookingForLawyer } from '@/types/models';
 
 export default function CompleteBookingPage() {
   const params = useParams();
   const router = useRouter();
-  const [booking, setBooking] = useState<any>(null);
+  const [booking, setBooking] = useState<IPopulatedBookingForLawyer | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [sessionNotes, setSessionNotes] = useState('');
@@ -64,6 +66,16 @@ export default function CompleteBookingPage() {
     );
   }
 
+  if (!booking) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-500">Booking not found</p>
+      </div>
+    );
+  }
+
+  const client = typeof booking.clientId === 'object' ? booking.clientId : null;
+
   return (
     <div className="min-h-screen bg-white">
       <div className="bg-black text-white py-8">
@@ -79,22 +91,45 @@ export default function CompleteBookingPage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {booking && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
-            <h2 className="text-lg font-bold mb-4">Session Details</h2>
-            <div className="space-y-2">
-              <p><span className="text-gray-600">Client:</span> <span className="font-medium">{booking.clientId.firstName} {booking.clientId.lastName}</span></p>
-              <p><span className="text-gray-600">Session Type:</span> <span className="font-medium">
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+          <h2 className="text-lg font-bold mb-4">Session Details</h2>
+          <div className="space-y-2">
+            <p>
+              <span className="text-gray-600">Client:</span>{' '}
+              <span className="font-medium">
+                {client ? `${client.firstName} ${client.lastName}` : 'N/A'}
+              </span>
+            </p>
+            <p>
+              <span className="text-gray-600">Session Type:</span>{' '}
+              <span className="font-medium">
                 {booking.sessionType.split('-').map((w: string) => 
                   w.charAt(0).toUpperCase() + w.slice(1)
                 ).join(' ')}
-              </span></p>
-              <p><span className="text-gray-600">Duration:</span> <span className="font-medium">{booking.durationType === 'full-hour' ? '60 minutes' : '30 minutes'}</span></p>
-              <p><span className="text-gray-600">Date:</span> <span className="font-medium">{new Date(booking.confirmedDateTime).toLocaleString('en-IN')}</span></p>
-              <p><span className="text-gray-600">Amount:</span> <span className="font-medium">₹{booking.amount}</span></p>
-            </div>
+              </span>
+            </p>
+            <p>
+              <span className="text-gray-600">Duration:</span>{' '}
+              <span className="font-medium">
+                {booking.durationType === 'full-hour' ? '60 minutes' : '30 minutes'}
+              </span>
+            </p>
+            {booking.confirmedDateTime && (
+              <p>
+                <span className="text-gray-600">Date:</span>{' '}
+                <span className="font-medium">
+                  {new Date(booking.confirmedDateTime).toLocaleString('en-IN')}
+                </span>
+              </p>
+            )}
+            <p>
+              <span className="text-gray-600">Amount:</span>{' '}
+              <span className="font-medium">
+                {booking.currency === 'INR' ? '₹' : '$'}{booking.amount}
+              </span>
+            </p>
           </div>
-        )}
+        </div>
 
         <form onSubmit={handleSubmit} className="border border-gray-200 rounded-lg p-6">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">

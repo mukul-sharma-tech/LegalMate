@@ -5,10 +5,11 @@ import Navbar from '@/components/layout/Navbar';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Calendar, Filter } from 'lucide-react';
+import { IPopulatedBookingForClient } from '@/types/models';
 
 export default function ClientBookingsPage() {
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [filteredBookings, setFilteredBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<IPopulatedBookingForClient[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<IPopulatedBookingForClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
@@ -61,6 +62,7 @@ export default function ClientBookingsPage() {
       }
     } catch (error) {
       toast.error('An error occurred');
+      console.log(error)
     }
   };
 
@@ -120,73 +122,79 @@ export default function ClientBookingsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredBookings.map((booking: any) => (
-              <div key={booking._id} className="legal-card p-6">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
-                  <div className="flex-1 mb-4 md:mb-0">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-xl font-bold text-gray-900">
-                        {booking.lawyerId?.userId?.firstName} {booking.lawyerId?.userId?.lastName}
-                      </h3>
-                      {getStatusBadge(booking.status)}
-                    </div>
-                    <p className="text-gray-600 mb-2">
-                      {booking.sessionType.charAt(0).toUpperCase() + booking.sessionType.slice(1).replace('-', ' ')} - {booking.durationType === 'half-hour' ? '30 minutes' : '60 minutes'}
-                    </p>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                      <span>📅 {format(new Date(booking.preferredDate), 'MMM dd, yyyy')}</span>
-                      <span>🕐 {booking.preferredTime}</span>
-                      <span>💰 {booking.currency === 'INR' ? '₹' : '$'}{booking.amount}</span>
-                      <span className={`font-medium ${booking.paymentStatus === 'paid' ? 'text-green-600' : 'text-yellow-600'}`}>
-                        Payment: {booking.paymentStatus}
-                      </span>
+            {filteredBookings.map((booking) => {
+              // Type guard to check if lawyerId is populated
+              const lawyer = typeof booking.lawyerId !== 'object' ? null : booking.lawyerId;
+              const lawyerUser = lawyer && typeof lawyer.userId === 'object' ? lawyer.userId : null;
+
+              return (
+                <div key={booking._id.toString()} className="legal-card p-6">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
+                    <div className="flex-1 mb-4 md:mb-0">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h3 className="text-xl font-bold text-gray-900">
+                          {lawyerUser ? `${lawyerUser.firstName} ${lawyerUser.lastName}` : 'Lawyer Name Not Available'}
+                        </h3>
+                        {getStatusBadge(booking.status)}
+                      </div>
+                      <p className="text-gray-600 mb-2">
+                        {booking.sessionType.charAt(0).toUpperCase() + booking.sessionType.slice(1).replace('-', ' ')} - {booking.durationType === 'half-hour' ? '30 minutes' : '60 minutes'}
+                      </p>
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                        <span>📅 {format(new Date(booking.preferredDate), 'MMM dd, yyyy')}</span>
+                        <span>🕐 {booking.preferredTime}</span>
+                        <span>💰 {booking.currency === 'INR' ? '₹' : '$'}{booking.amount}</span>
+                        <span className={`font-medium ${booking.paymentStatus === 'paid' ? 'text-green-600' : 'text-yellow-600'}`}>
+                          Payment: {booking.paymentStatus}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="border-t pt-4">
-                  <h4 className="font-medium text-gray-900 mb-2">Issue Description:</h4>
-                  <p className="text-gray-700 mb-3">{booking.issueDescription}</p>
-                  
-                  {booking.lawyerNotes && (
-                    <div className="bg-blue-50 p-3 rounded-lg mb-3">
-                      <h4 className="font-medium text-gray-900 mb-1">Lawyer  Notes:</h4>
-                      <p className="text-gray-700 text-sm">{booking.lawyerNotes}</p>
-                    </div>
-                  )}
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium text-gray-900 mb-2">Issue Description:</h4>
+                    <p className="text-gray-700 mb-3">{booking.issueDescription}</p>
+                    
+                    {booking.lawyerNotes && (
+                      <div className="bg-blue-50 p-3 rounded-lg mb-3">
+                        <h4 className="font-medium text-gray-900 mb-1">Lawyer Notes:</h4>
+                        <p className="text-gray-700 text-sm">{booking.lawyerNotes}</p>
+                      </div>
+                    )}
 
-                  {booking.meetingLink && booking.status === 'approved' && (
-                    <a
-                      href={booking.meetingLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-900 hover:underline text-sm font-medium"
-                    >
-                      🔗 Join Meeting
-                    </a>
-                  )}
-                </div>
+                    {booking.meetingLink && booking.status === 'approved' && (
+                      <a
+                        href={booking.meetingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-900 hover:underline text-sm font-medium"
+                      >
+                        🔗 Join Meeting
+                      </a>
+                    )}
+                  </div>
 
-                <div className="flex flex-wrap gap-3 mt-4">
-                  {booking.status === 'pending' && (
-                    <button
-                      onClick={() => handleCancel(booking._id)}
-                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
-                    >
-                      Cancel Booking
-                    </button>
-                  )}
-                  {booking.status === 'completed' && (
-                    <a
-                      href={`/client/bookings/${booking._id}/review`}
-                      className="px-4 py-2 legal-button text-sm"
-                    >
-                      Leave Review
-                    </a>
-                  )}
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    {booking.status === 'pending' && (
+                      <button
+                        onClick={() => handleCancel(booking._id.toString())}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
+                      >
+                        Cancel Booking
+                      </button>
+                    )}
+                    {booking.status === 'completed' && (
+                      <a
+                        href={`/client/bookings/${booking._id.toString()}/review`}
+                        className="px-4 py-2 legal-button text-sm"
+                      >
+                        Leave Review
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

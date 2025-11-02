@@ -4,6 +4,22 @@ import User from '@/lib/models/user';
 import { createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/utils/errorHandler';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
+import { IUserModel, ILawyerModel } from '@/types/models'; // Assuming you create this file
+
+// 1. Interface for the Mongoose query object
+interface LawyerQuery {
+  isActive?: boolean;
+  specializations?: { $in: string[] };
+  languagesSpoken?: { $in: string[] };
+  averageRating?: { $gte: number };
+  'fees.perHour'?: { $lte: number };
+}
+
+// 2. Interface for the Populated Lawyer result
+// We define the expected shape after population: lawyer.userId should be the User model
+interface PopulatedLawyer extends Omit<ILawyerModel, 'userId'> {
+    userId: IUserModel;
+}
 
 // GET all lawyers with filters
 export async function GET(req: NextRequest) {
@@ -20,7 +36,8 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '12');
 
     // Build query
-    const query: any = { isActive: true };
+    // FIX 1: Replaced 'any' with the specific 'LawyerQuery' interface
+    const query: LawyerQuery = { isActive: true };
 
     if (specialization) {
       query.specializations = { $in: [specialization] };
@@ -39,17 +56,20 @@ export async function GET(req: NextRequest) {
     }
 
     // Get lawyers with populated user data
+    // FIX 2: Specified the expected return type for the lawyers array
     const lawyers = await Lawyer.find(query)
       .populate('userId', 'firstName lastName email profileImage')
       .sort({ averageRating: -1, totalReviews: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .lean();
+      .lean() as PopulatedLawyer[]; // Cast the result to the populated type
 
     // Search by name if search param exists
-    let filteredLawyers = lawyers;
+    let filteredLawyers: PopulatedLawyer[] = lawyers;
     if (search) {
-      filteredLawyers = lawyers.filter((lawyer: any) => {
+      // FIX 2: Replaced 'lawyer: any' with the correct PopulatedLawyer type
+      filteredLawyers = lawyers.filter((lawyer: PopulatedLawyer) => {
+        // Accessing userId fields is now type-safe
         const fullName = `${lawyer.userId.firstName} ${lawyer.userId.lastName}`.toLowerCase();
         return fullName.includes(search.toLowerCase());
       });

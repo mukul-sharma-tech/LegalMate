@@ -3,11 +3,12 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { IPopulatedBookingForLawyer } from '@/types/models';
 
 export default function ApproveBookingPage() {
   const params = useParams();
   const router = useRouter();
-  const [booking, setBooking] = useState<any>(null);
+  const [booking, setBooking] = useState<IPopulatedBookingForLawyer | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -91,6 +92,8 @@ export default function ApproveBookingPage() {
     );
   }
 
+  const client = typeof booking.clientId === 'object' ? booking.clientId : null;
+
   return (
     <div className="min-h-screen bg-white">
       <div className="bg-black text-white py-8">
@@ -113,12 +116,12 @@ export default function ApproveBookingPage() {
             <div>
               <p className="text-sm text-gray-600 mb-1">Client Name</p>
               <p className="font-medium">
-                {booking.clientId.firstName} {booking.clientId.lastName}
+                {client ? `${client.firstName} ${client.lastName}` : 'N/A'}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Email</p>
-              <p className="font-medium">{booking.clientId.email}</p>
+              <p className="font-medium">{client?.email || 'N/A'}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Session Type</p>
@@ -178,7 +181,7 @@ export default function ApproveBookingPage() {
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                Pre-filled with clients requested date
+                Pre-filled with client s requested date
               </p>
             </div>
 
@@ -194,7 +197,7 @@ export default function ApproveBookingPage() {
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                Pre-filled with clients requested time
+                Pre-filled with client s requested time
               </p>
             </div>
           </div>

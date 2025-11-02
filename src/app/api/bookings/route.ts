@@ -5,6 +5,14 @@ import User from '@/lib/models/user';
 import { createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/utils/errorHandler';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
+import { Document, Types } from 'mongoose'; // Import Mongoose types
+
+// Interface for the Mongoose query object
+interface BookingQuery {
+  clientId?: Types.ObjectId;
+  lawyerId?: Types.ObjectId;
+  status?: string;
+}
 
 // GET all bookings for current user
 export async function GET(req: NextRequest) {
@@ -28,16 +36,18 @@ export async function GET(req: NextRequest) {
     }
 
     // Build query based on user role
-    let query: any = {};
+    // FIX 1 & 2: Changed 'let query: any' to 'const query: BookingQuery'
+    const query: BookingQuery = {};
     
     if (user.role === 'client') {
-      query.clientId = user._id;
+      // Assuming user._id and lawyer._id are Mongoose ObjectIds
+      query.clientId = user._id as Types.ObjectId;
     } else if (user.role === 'lawyer') {
       const lawyer = await Lawyer.findOne({ clerkId: userId });
       if (!lawyer) {
         return createErrorResponse('Lawyer profile not found', 404);
       }
-      query.lawyerId = lawyer._id;
+      query.lawyerId = lawyer._id as Types.ObjectId;
     }
 
     if (status) {

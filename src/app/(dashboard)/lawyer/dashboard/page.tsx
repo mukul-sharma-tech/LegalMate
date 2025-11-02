@@ -8,12 +8,13 @@ import { Calendar, Clock, CheckCircle, Star, Users, DollarSign } from 'lucide-re
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { IPopulatedBookingForLawyer, ILawyerProfile } from '@/types/models';
 
 export default function LawyerDashboard() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [profile, setProfile] = useState<any>(null);
+  const [bookings, setBookings] = useState<IPopulatedBookingForLawyer[]>([]);
+  const [profile, setProfile] = useState<ILawyerProfile | null>(null);
   const [stats, setStats] = useState({
     pending: 0,
     approved: 0,
@@ -55,12 +56,12 @@ export default function LawyerDashboard() {
         setBookings(bookingsData.data);
         
         // Calculate stats
-        const completed = bookingsData.data.filter((b: any) => b.status === 'completed');
-        const totalEarnings = completed.reduce((sum: number, b: any) => sum + b.amount, 0);
+        const completed = bookingsData.data.filter((b: IPopulatedBookingForLawyer) => b.status === 'completed');
+        const totalEarnings = completed.reduce((sum: number, b: IPopulatedBookingForLawyer) => sum + b.amount, 0);
         
         setStats({
-          pending: bookingsData.data.filter((b: any) => b.status === 'pending').length,
-          approved: bookingsData.data.filter((b: any) => b.status === 'approved').length,
+          pending: bookingsData.data.filter((b: IPopulatedBookingForLawyer) => b.status === 'pending').length,
+          approved: bookingsData.data.filter((b: IPopulatedBookingForLawyer) => b.status === 'approved').length,
           completed: completed.length,
           totalEarnings
         });
@@ -98,6 +99,7 @@ export default function LawyerDashboard() {
       }
     } catch (error) {
       toast.error('An error occurred');
+      console.log(error)
     }
   };
 
@@ -120,6 +122,7 @@ export default function LawyerDashboard() {
       }
     } catch (error) {
       toast.error('An error occurred');
+      console.log(error)
     }
   };
 
@@ -263,43 +266,48 @@ export default function LawyerDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {bookings.filter(b => b.status === 'pending').map((booking: any) => (
-                <div key={booking._id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-900 mb-1">
-                        {booking.clientId?.firstName} {booking.clientId?.lastName}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-2">
-                        {booking.sessionType.charAt(0).toUpperCase() + booking.sessionType.slice(1).replace('-', ' ')} - {booking.durationType === 'half-hour' ? '30 min' : '60 min'}
-                      </p>
-                      <p className="text-sm text-gray-700 mb-2">
-                        <strong>Issue:</strong> {booking.issueDescription}
-                      </p>
+              {bookings.filter(b => b.status === 'pending').map((booking) => {
+                // Type guard to check if clientId is populated
+                const client = typeof booking.clientId === 'object' ? booking.clientId : null;
+
+                return (
+                  <div key={booking._id.toString()} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-900 mb-1">
+                          {client ? `${client.firstName} ${client.lastName}` : 'Client Name Not Available'}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {booking.sessionType.charAt(0).toUpperCase() + booking.sessionType.slice(1).replace('-', ' ')} - {booking.durationType === 'half-hour' ? '30 min' : '60 min'}
+                        </p>
+                        <p className="text-sm text-gray-700 mb-2">
+                          <strong>Issue:</strong> {booking.issueDescription}
+                        </p>
+                      </div>
+                      {getStatusBadge(booking.status)}
                     </div>
-                    {getStatusBadge(booking.status)}
+                    <div className="flex items-center text-sm text-gray-600 space-x-4 mb-3">
+                      <span>📅 {format(new Date(booking.preferredDate), 'MMM dd, yyyy')}</span>
+                      <span>🕐 {booking.preferredTime}</span>
+                      <span>💰 {booking.currency === 'INR' ? '₹' : '$'}{booking.amount}</span>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => handleApprove(booking._id.toString())}
+                        className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleReject(booking._id.toString())}
+                        className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+                      >
+                        Reject
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600 space-x-4 mb-3">
-                    <span>📅 {format(new Date(booking.preferredDate), 'MMM dd, yyyy')}</span>
-                    <span>🕐 {booking.preferredTime}</span>
-                    <span>💰 {booking.currency === 'INR' ? '₹' : '$'}{booking.amount}</span>
-                  </div>
-                  <div className="flex space-x-3">
-                    <button
-                      onClick={() => handleApprove(booking._id)}
-                      className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => handleReject(booking._id)}
-                      className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

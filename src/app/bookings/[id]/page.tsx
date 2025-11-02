@@ -4,56 +4,43 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { IUserModel, UserRole } from '@/types/models';
+import { Types } from 'mongoose';
 
-interface Booking {
-  _id: string;
-  clientId: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    profileImage?: string;
-    phone?: string;
-  };
+interface IBookingDetail {
+  _id: Types.ObjectId;
+  clientId: IUserModel;
   lawyerId: {
-    _id: string;
-    userId: {
-      firstName: string;
-      lastName: string;
-      email: string;
-      profileImage?: string;
-      phone?: string;
-    };
+    _id: Types.ObjectId;
+    userId: IUserModel;
   };
-  sessionType: string;
-  durationType: string;
-  preferredDate: string;
+  sessionType: 'consultation' | 'follow-up' | 'legal-advice' | 'case-review';
+  durationType: 'half-hour' | 'full-hour';
+  preferredDate: Date;
   preferredTime: string;
-  confirmedDateTime?: string;
-  status: string;
+  confirmedDateTime?: Date;
+  status: 'pending' | 'approved' | 'rejected' | 'completed' | 'cancelled';
   amount: number;
   currency: string;
-  paymentStatus: string;
+  paymentStatus: 'pending' | 'paid' | 'refunded';
   issueDescription: string;
   clientNotes?: string;
   lawyerNotes?: string;
+  sessionNotes?: string;
   meetingLink?: string;
-  requestedAt: string;
-  approvedAt?: string;
-  rejectedAt?: string;
-  completedAt?: string;
-  cancelledAt?: string;
   cancellationReason?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export default function BookingDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [booking, setBooking] = useState<Booking | null>(null);
+  const [booking, setBooking] = useState<IBookingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [userRole, setUserRole] = useState<'client' | 'lawyer' | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
     fetchBooking();
@@ -76,7 +63,7 @@ export default function BookingDetailPage() {
 
   const fetchUserRole = async () => {
     try {
-      const response = await fetch('/api/user/profile');
+      const response = await fetch('/api/auth/check-role');
       const data = await response.json();
       if (data.success) {
         setUserRole(data.data.role);
@@ -151,7 +138,7 @@ export default function BookingDetailPage() {
       <div className="bg-black text-white py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <button
-            onClick={() => router.push('/bookings')}
+            onClick={() => router.push(userRole === 'lawyer' ? '/lawyer/bookings' : '/client/bookings')}
             className="text-gray-400 hover:text-white mb-4"
           >
             ← Back to bookings
@@ -284,6 +271,14 @@ export default function BookingDetailPage() {
               </div>
             )}
 
+            {/* Session Notes */}
+            {booking.sessionNotes && (
+              <div className="border border-gray-200 rounded-lg p-6">
+                <h2 className="text-xl font-bold mb-4">Session Notes</h2>
+                <p className="text-gray-700 whitespace-pre-wrap">{booking.sessionNotes}</p>
+              </div>
+            )}
+
             {/* Meeting Link */}
             {booking.meetingLink && (
               <div className="border border-gray-200 rounded-lg p-6">
@@ -304,9 +299,6 @@ export default function BookingDetailPage() {
               <div className="border border-red-200 bg-red-50 rounded-lg p-6">
                 <h2 className="text-xl font-bold mb-2 text-red-800">Cancellation Reason</h2>
                 <p className="text-red-700">{booking.cancellationReason}</p>
-                <p className="text-sm text-red-600 mt-2">
-                  Cancelled on: {new Date(booking.cancelledAt!).toLocaleString('en-IN')}
-                </p>
               </div>
             )}
           </div>
@@ -320,7 +312,9 @@ export default function BookingDetailPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Amount</span>
-                    <span className="font-bold">₹{booking.amount}</span>
+                    <span className="font-bold">
+                      {booking.currency === 'INR' ? '₹' : '$'}{booking.amount}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Status</span>
@@ -344,54 +338,10 @@ export default function BookingDetailPage() {
                     <div>
                       <p className="text-sm font-medium">Requested</p>
                       <p className="text-xs text-gray-600">
-                        {new Date(booking.requestedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                        {new Date(booking.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                       </p>
                     </div>
                   </div>
-                  {booking.approvedAt && (
-                    <div className="flex items-start">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3"></div>
-                      <div>
-                        <p className="text-sm font-medium">Approved</p>
-                        <p className="text-xs text-gray-600">
-                          {new Date(booking.approvedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {booking.completedAt && (
-                    <div className="flex items-start">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3"></div>
-                      <div>
-                        <p className="text-sm font-medium">Completed</p>
-                        <p className="text-xs text-gray-600">
-                          {new Date(booking.completedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {booking.rejectedAt && (
-                    <div className="flex items-start">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3"></div>
-                      <div>
-                        <p className="text-sm font-medium">Rejected</p>
-                        <p className="text-xs text-gray-600">
-                          {new Date(booking.rejectedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {booking.cancelledAt && (
-                    <div className="flex items-start">
-                      <div className="w-2 h-2 bg-gray-500 rounded-full mt-2 mr-3"></div>
-                      <div>
-                        <p className="text-sm font-medium">Cancelled</p>
-                        <p className="text-xs text-gray-600">
-                          {new Date(booking.cancelledAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -449,7 +399,7 @@ export default function BookingDetailPage() {
       {/* Cancel Modal */}
       {showCancelModal && (
         <CancelModal
-          bookingId={booking._id}
+          bookingId={booking._id.toString()}
           onClose={() => setShowCancelModal(false)}
           onSuccess={fetchBooking}
         />
@@ -458,8 +408,8 @@ export default function BookingDetailPage() {
       {/* Review Modal */}
       {showReviewModal && (
         <ReviewModal
-          bookingId={booking._id}
-          lawyerId={booking.lawyerId._id}
+          bookingId={booking._id.toString()}
+          lawyerId={booking.lawyerId._id.toString()}
           onClose={() => setShowReviewModal(false)}
         />
       )}
@@ -468,7 +418,13 @@ export default function BookingDetailPage() {
 }
 
 // Cancel Modal
-function CancelModal({ bookingId, onClose, onSuccess }: any) {
+interface CancelModalProps {
+  bookingId: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function CancelModal({ bookingId, onClose, onSuccess }: CancelModalProps) {
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -545,7 +501,13 @@ function CancelModal({ bookingId, onClose, onSuccess }: any) {
 }
 
 // Review Modal
-function ReviewModal({ bookingId, lawyerId, onClose }: any) {
+interface ReviewModalProps {
+  bookingId: string;
+  lawyerId: string;
+  onClose: () => void;
+}
+
+function ReviewModal({ bookingId, lawyerId, onClose }: ReviewModalProps) {
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
   const [loading, setLoading] = useState(false);

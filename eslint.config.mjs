@@ -20,6 +20,23 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  // --- FIX: Add configuration to disable or modify the no-unused-vars rule ---
+  {
+    // Apply this configuration to TypeScript files
+    files: ["**/*.ts", "**/*.tsx"],
+    rules: {
+      // Option 1 (Recommended compromise): Allow variables prefixed with an underscore
+      // Change 'warn' to 'error' if you want to fail the build on unused vars
+      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+      
+      // Option 2 (If Option 1 doesn't resolve all warnings and you must deploy): 
+      // "@typescript-eslint/no-unused-vars": "off",
+
+      // Option 3: Also disable the base ESLint rule (Next/Vitals might already handle this)
+      // "no-unused-vars": "off" 
+    },
+  },
+  // --------------------------------------------------------------------------
 ];
 
 export default eslintConfig;
