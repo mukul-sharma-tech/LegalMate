@@ -3,5 +3,6 @@ flask_cors
 python-dotenv
 gunicorn
 langchain
+langchain-core
 langchain-google-genai
 pydantic
