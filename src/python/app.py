@@ -58,7 +58,7 @@ def know_your_rights():
     
     try:
         result = rag_handler.get_rights(data['query'])
-        return jsonify(result.model_dump(by_alias=True))
+        return jsonify(result.model_dump())
     except Exception as e:
         print(f"Error in know_your_rights: {e}", file=sys.stderr)
         import traceback
@@ -76,7 +76,7 @@ def simplify_document():
     
     try:
         result = rag_handler.simplify_document(data['text'])
-        return jsonify(result.model_dump(by_alias=True))
+        return jsonify(result.model_dump())
     except Exception as e:
         print(f"Error in simplify_document: {e}", file=sys.stderr)
         import traceback
@@ -94,7 +94,7 @@ def advise_case():
     
     try:
         result = rag_handler.advise_on_case(data['case_text'])
-        return jsonify(result.model_dump(by_alias=True))
+        return jsonify(result.model_dump())
     except Exception as e:
         print(f"Error in advise_case: {e}", file=sys.stderr)
         import traceback
