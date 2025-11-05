@@ -2,15 +2,15 @@
 
 import os
 from typing import List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field  # Changed from pydantic.v1
+
 # --- LangChain & Google Generative AI Imports ---
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.runnable import RunnablePassthrough
-from langchain.schema.output_parser import StrOutputParser # Import this
+from langchain.schema.output_parser import StrOutputParser
 
 # --- Pydantic Models for All API Endpoints ---
-# (These remain the same as before)
 
 class RelevantLaw(BaseModel):
     title: str = Field(description="The title of the relevant law or legal principle")
@@ -18,19 +18,16 @@ class RelevantLaw(BaseModel):
 
 class KnowYourRightsResponse(BaseModel):
     explanation: str = Field(description="A simple, plain-language explanation of the user's rights based on the user's question.")
-    relevantLaws: list[RelevantLaw] = Field(
-        description="A list of relevant laws or principles.",
-        default_factory=list
-    )    
+    relevantLaws: List[RelevantLaw] = Field(description="A list of relevant laws or principles.")
     guidance: str = Field(description="Actionable guidance for the user, written in paragraph form.")
-    disclaimer: str = Field(description="Standard disclaimer...", default="This is for informational purposes only and does not constitute legal advice. Consult with a qualified attorney.")
+    disclaimer: str = Field(description="This is for informational purposes only and does not constitute legal advice. Consult with a qualified attorney.", default="This is for informational purposes only and does not constitute legal advice. Consult with a qualified attorney.")
 
 class SimplifiedPoint(BaseModel):
     title: str = Field(description="A short, clear title for the point")
     text: str = Field(description="The simplified explanation of the point")
 
 class SimplifyResponse(BaseModel):
-    summary_points: list[SimplifiedPoint] = Field(default_factory=list)
+    summary_points: List[SimplifiedPoint]
 
 class AnalysisPoint(BaseModel):
     type: str = Field(description="Must be 'point' for legal analysis or 'recommendation' for advice.")
@@ -38,17 +35,22 @@ class AnalysisPoint(BaseModel):
     text: str = Field(description="The detailed explanation of the point or recommendation")
 
 class AdviseResponse(BaseModel):
-    analysis_points: list[AnalysisPoint] = Field(default_factory=list)
+    analysis_points: List[AnalysisPoint]
 
 
 # --- The Main "LLM" Class (No RAG) ---
 
 class LegalRAG:
     def __init__(self, api_key: str):
+        if not api_key:
+            raise ValueError("Google API Key is required")
         
-        self.llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=api_key)
+        self.llm = ChatGoogleGenerativeAI(
+            model="gemini-2.0-flash-exp", 
+            temperature=0.3, 
+            google_api_key=api_key
+        )
         
-        # --- Add a new simple output parser ---
         self.string_parser = StrOutputParser()
 
     # --- Public Methods for Each API Endpoint ---
@@ -56,7 +58,6 @@ class LegalRAG:
     def get_rights(self, question: str) -> KnowYourRightsResponse:
         """Handler for the 'Know Your Rights' feature (without RAG)."""
         
-        # --- MODIFIED: Added language instruction ---
         prompt = ChatPromptTemplate.from_template(
             """
             You are a helpful legal assistant. Answer the user's question based on your general knowledge.
@@ -80,7 +81,6 @@ class LegalRAG:
     def simplify_document(self, doc_text: str) -> SimplifyResponse:
         """Handler for the 'Simplify Document' feature (without RAG)."""
         
-        # --- MODIFIED: Added language instruction ---
         prompt = ChatPromptTemplate.from_template(
             """
             You are an expert legal assistant. Your task is to simplify the 'User's Document' provided below.
@@ -105,7 +105,6 @@ class LegalRAG:
     def advise_on_case(self, case_text: str) -> AdviseResponse:
         """Handler for the 'AI Legal Advisor' feature."""
         
-        # --- MODIFIED: Added language instruction ---
         prompt = ChatPromptTemplate.from_template(
             """
             You are an AI Legal Advisor. Analyze the user's situation described in 'User's Case'.
@@ -127,11 +126,9 @@ class LegalRAG:
         )
         return chain.invoke(case_text)
 
-    # --- This is the new method for your Vakil chatbot ---
     def ask_question_about_document(self, doc_text: str, question: str) -> str:
         """Handler for the 'Vakil' chatbot."""
         
-        # --- MODIFIED: Added language instruction ---
         prompt = ChatPromptTemplate.from_template(
             """
             You are a helpful legal assistant named 'Vakil'. 
