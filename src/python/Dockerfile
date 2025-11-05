@@ -14,4 +14,8 @@ COPY . .
 
 # Gunicorn will listen on the port provided by Render's $PORT environment variable
 # We use gunicorn as the production-ready web server instead of Flask's built-in server
-CMD ["gunicorn", "--workers", "4", "--bind", "0.0.0.0:$PORT", "app:app"]
+#
+# --- MODIFIED ---
+# We use the "shell" form of CMD (just a string) so that the $PORT
+# environment variable is correctly expanded by the shell.
+CMD gunicorn --workers 4 --bind 0.0.0.0:$PORT app:app
