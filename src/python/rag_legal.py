@@ -2,7 +2,7 @@
 
 import os
 from typing import List
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 
 # --- LangChain & Google Generative AI Imports ---
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -11,18 +11,15 @@ from langchain.schema.runnable import RunnablePassthrough
 from langchain.schema.output_parser import StrOutputParser
 
 # --- Pydantic Models for All API Endpoints ---
+# Using camelCase directly to avoid alias issues with LangChain
 
 class RelevantLaw(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-    
     title: str = Field(description="The title of the relevant law or legal principle")
     text: str = Field(description="A simple explanation of what the law means")
 
 class KnowYourRightsResponse(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-    
     explanation: str = Field(description="A simple, plain-language explanation of the user's rights based on the user's question.")
-    relevant_laws: List[RelevantLaw] = Field(description="A list of relevant laws or principles.", alias="relevantLaws")
+    relevantLaws: List[RelevantLaw] = Field(description="A list of relevant laws or principles.")
     guidance: str = Field(description="Actionable guidance for the user, written in paragraph form.")
     disclaimer: str = Field(
         description="This is for informational purposes only and does not constitute legal advice. Consult with a qualified attorney.", 
@@ -30,27 +27,19 @@ class KnowYourRightsResponse(BaseModel):
     )
 
 class SimplifiedPoint(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-    
     title: str = Field(description="A short, clear title for the point")
     text: str = Field(description="The simplified explanation of the point")
 
 class SimplifyResponse(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-    
-    summary_points: List[SimplifiedPoint] = Field(alias="summaryPoints")
+    summaryPoints: List[SimplifiedPoint] = Field(description="List of simplified points from the document")
 
 class AnalysisPoint(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-    
     type: str = Field(description="Must be 'point' for legal analysis or 'recommendation' for advice.")
     title: str = Field(description="A short, clear title for the point or recommendation")
     text: str = Field(description="The detailed explanation of the point or recommendation")
 
 class AdviseResponse(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-    
-    analysis_points: List[AnalysisPoint] = Field(alias="analysisPoints")
+    analysisPoints: List[AnalysisPoint] = Field(description="List of analysis points and recommendations")
 
 
 # --- The Main "LLM" Class (No RAG) ---
