@@ -2,8 +2,7 @@
 
 import os
 from typing import List
-from pydantic.v1 import BaseModel, Field
-
+from pydantic import BaseModel, Field
 # --- LangChain & Google Generative AI Imports ---
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
