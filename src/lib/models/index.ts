@@ -4,15 +4,19 @@ import Lawyer from './lawyer';
 import Client from './client';
 import Booking from './booking';
 import Review from './review';
+import Chat from './chat';
 
 // Export all models
-export { User, Lawyer, Client, Booking, Review };
+export { User, Lawyer, Client, Booking, Review, Chat };
 
 // Export default for easy import
-export default {
+const models = {
   User,
   Lawyer,
   Client,
   Booking,
-  Review
+  Review,
+  Chat
 };
+
+export default models;
