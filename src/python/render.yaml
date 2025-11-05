@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: legal-mate-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free # Or 'starter' etc.
+    envVars:
+      - key: GOOGLE_API_KEY
+        sync: false # Set this to 'false' to keep your key secret. You will paste it in the Render dashboard.
