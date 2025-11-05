@@ -107,7 +107,15 @@ from rag_legal import LegalRAG
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {
+    "origins": [
+        "http://localhost:3000",
+        "https://legal-mate-ai.vercel.app",
+        "https://legalmate-1.onrender.com"
+    ],
+    "methods": ["GET", "POST", "OPTIONS"],
+    "allow_headers": ["Content-Type"]
+}})
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 rag_handler = LegalRAG(api_key=GOOGLE_API_KEY)
