@@ -1,7 +1,7 @@
 # rag_legal.py
 
 import os
-from typing import List
+# from typing import List  <-- REMOVED THIS
 from pydantic import BaseModel, Field
 
 # --- LangChain & Google Generative AI Imports ---
@@ -19,7 +19,13 @@ class RelevantLaw(BaseModel):
 
 class KnowYourRightsResponse(BaseModel):
     explanation: str = Field(description="A simple, plain-language explanation of the user's rights based on the user's question.")
-    relevantLaws: List[RelevantLaw] = Field(description="A list of relevant laws or principles.")
+    
+    # --- FIX 1 ---
+    relevantLaws: list[RelevantLaw] = Field(
+        description="A list of relevant laws or principles.",
+        default_factory=list
+    )
+    
     guidance: str = Field(description="Actionable guidance for the user, written in paragraph form.")
     disclaimer: str = Field(
         description="This is for informational purposes only and does not constitute legal advice. Consult with a qualified attorney.", 
@@ -31,7 +37,11 @@ class SimplifiedPoint(BaseModel):
     text: str = Field(description="The simplified explanation of the point")
 
 class SimplifyResponse(BaseModel):
-    summaryPoints: List[SimplifiedPoint] = Field(description="List of simplified points from the document")
+    # --- FIX 2 ---
+    summaryPoints: list[SimplifiedPoint] = Field(
+        description="List of simplified points from the document",
+        default_factory=list
+    )
 
 class AnalysisPoint(BaseModel):
     type: str = Field(description="Must be 'point' for legal analysis or 'recommendation' for advice.")
@@ -39,7 +49,11 @@ class AnalysisPoint(BaseModel):
     text: str = Field(description="The detailed explanation of the point or recommendation")
 
 class AdviseResponse(BaseModel):
-    analysisPoints: List[AnalysisPoint] = Field(description="List of analysis points and recommendations")
+    # --- FIX 3 ---
+    analysisPoints: list[AnalysisPoint] = Field(
+        description="List of analysis points and recommendations",
+        default_factory=list
+    )
 
 
 # --- The Main "LLM" Class (No RAG) ---
@@ -50,7 +64,8 @@ class LegalRAG:
             raise ValueError("Google API Key is required")
         
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash", 
+            # --- FIX 4: Changed to a stable model ---
+            model="gemini-1.5-flash", 
             temperature=0.3, 
             google_api_key=api_key
         )
