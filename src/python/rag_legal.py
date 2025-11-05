@@ -1,13 +1,13 @@
-
 import os
 from typing import List
 from pydantic.v1 import BaseModel, Field
 
 # --- LangChain & Google Generative AI Imports ---
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema.runnable import RunnablePassthrough
-from langchain.schema.output_parser import StrOutputParser # Import this
+# --- MODIFIED: Imports moved to langchain_core ---
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 
 # --- Pydantic Models for All API Endpoints ---
 # (These remain the same as before)
