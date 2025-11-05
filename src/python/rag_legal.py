@@ -18,7 +18,10 @@ class RelevantLaw(BaseModel):
 
 class KnowYourRightsResponse(BaseModel):
     explanation: str = Field(description="A simple, plain-language explanation of the user's rights based on the user's question.")
-    relevantLaws: list[RelevantLaw] = Field(description="A list of relevant laws or principles.")
+    relevantLaws: list[RelevantLaw] = Field(
+        description="A list of relevant laws or principles.",
+        default_factory=list
+    )    
     guidance: str = Field(description="Actionable guidance for the user, written in paragraph form.")
     disclaimer: str = Field(description="Standard disclaimer...", default="This is for informational purposes only and does not constitute legal advice. Consult with a qualified attorney.")
 
@@ -27,7 +30,7 @@ class SimplifiedPoint(BaseModel):
     text: str = Field(description="The simplified explanation of the point")
 
 class SimplifyResponse(BaseModel):
-    summary_points: list[SimplifiedPoint]
+    summary_points: list[SimplifiedPoint] = Field(default_factory=list)
 
 class AnalysisPoint(BaseModel):
     type: str = Field(description="Must be 'point' for legal analysis or 'recommendation' for advice.")
@@ -35,7 +38,7 @@ class AnalysisPoint(BaseModel):
     text: str = Field(description="The detailed explanation of the point or recommendation")
 
 class AdviseResponse(BaseModel):
-    analysis_points: list[AnalysisPoint]
+    analysis_points: list[AnalysisPoint] = Field(default_factory=list)
 
 
 # --- The Main "LLM" Class (No RAG) ---
