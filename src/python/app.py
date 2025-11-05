@@ -16,100 +16,86 @@ CORS(app, resources={r"/api/*": {
     "origins": [
         "http://localhost:3000",
         "https://legal-mate-ai.vercel.app",
-        "https://legal-mcci.vercel.app"  # Removed trailing slash
+        "https://legal-mcci.vercel.app" # Cleaned up URL
     ]
 }})
 
 # --- AI Handler Initialization ---
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+rag_handler = None
 
-# Better error handling for initialization
 if not GOOGLE_API_KEY:
-    print("ERROR: GOOGLE_API_KEY environment variable not set!", file=sys.stderr)
-    rag_handler = None
+    print("FATAL ERROR: GOOGLE_API_KEY environment variable is not set.", file=sys.stderr)
 else:
     try:
         rag_handler = LegalRAG(api_key=GOOGLE_API_KEY)
-        print("✓ LegalRAG handler initialized successfully")
+        print("--- LegalRAG handler initialized successfully ---")
     except Exception as e:
-        print(f"FATAL: Could not initialize LegalRAG handler: {e}", file=sys.stderr)
-        import traceback
-        traceback.print_exc()
-        rag_handler = None
+        print(f"FATAL ERROR: Could not initialize LegalRAG handler: {e}", file=sys.stderr)
 
-# Health check endpoint
-@app.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({
-        "status": "healthy" if rag_handler else "degraded",
-        "rag_initialized": rag_handler is not None
-    }), 200
 
 # --- API Endpoints ---
 
 @app.route('/api/know-your-rights', methods=['POST'])
 def know_your_rights():
     if not rag_handler:
-        return jsonify({"error": "RAG system not initialized. Check server logs."}), 503
-    
+        return jsonify({"error": "Server error: RAG system not initialized"}), 503
+        
     data = request.get_json()
     if not data or 'query' not in data:
-        return jsonify({"error": "Invalid request. 'query' field is required."}), 400
-    
+        return jsonify({"error": "Invalid request: 'query' field missing"}), 400
+        
     try:
         result = rag_handler.get_rights(data['query'])
+        # --- FIX: Use .model_dump() for Pydantic v2 ---
         return jsonify(result.model_dump())
     except Exception as e:
         print(f"Error in know_your_rights: {e}", file=sys.stderr)
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": f"Failed to process query: {str(e)}"}), 500
+        return jsonify({"error": "Failed to process query"}), 500
 
 @app.route('/api/simplify', methods=['POST'])
 def simplify_document():
     if not rag_handler:
-        return jsonify({"error": "RAG system not initialized. Check server logs."}), 503
-    
+        return jsonify({"error": "Server error: RAG system not initialized"}), 503
+        
     data = request.get_json()
     if not data or 'text' not in data:
-        return jsonify({"error": "Invalid request. 'text' field is required."}), 400
-    
+        return jsonify({"error": "Invalid request: 'text' field missing"}), 400
+        
     try:
         result = rag_handler.simplify_document(data['text'])
+        # --- FIX: Use .model_dump() for Pydantic v2 ---
         return jsonify(result.model_dump())
     except Exception as e:
         print(f"Error in simplify_document: {e}", file=sys.stderr)
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": f"Failed to simplify document: {str(e)}"}), 500
+        return jsonify({"error": "Failed to simplify document"}), 500
 
 @app.route("/api/advise", methods=["POST"])
 def advise_case():
     if not rag_handler:
-        return jsonify({"error": "RAG system not initialized. Check server logs."}), 503
-    
+        return jsonify({"error": "Server error: RAG system not initialized"}), 503
+        
     data = request.get_json()
     if not data or 'case_text' not in data:
-        return jsonify({"error": "Invalid request. 'case_text' field is required."}), 400
-    
+        return jsonify({"error": "Invalid request: 'case_text' field missing"}), 400
+        
     try:
         result = rag_handler.advise_on_case(data['case_text'])
+        # --- FIX: Use .model_dump() for Pydantic v2 ---
         return jsonify(result.model_dump())
     except Exception as e:
         print(f"Error in advise_case: {e}", file=sys.stderr)
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": f"Failed to analyze case: {str(e)}"}), 500
+        return jsonify({"error": "Failed to analyze case"}), 500
 
 @app.route("/api/ask-vakil", methods=["POST"])
 def ask_vakil():
     if not rag_handler:
-        return jsonify({"error": "RAG system not initialized. Check server logs."}), 503
-    
+        return jsonify({"error": "Server error: RAG system not initialized"}), 503
+        
     data = request.get_json()
     if not data or 'document_text' not in data or 'question' not in data:
-        return jsonify({"error": "Invalid request. 'document_text' and 'question' fields are required."}), 400
-    
+        return jsonify({"error": "Invalid request: missing 'document_text' or 'question'"}), 400
+        
     try:
         result = rag_handler.ask_question_about_document(
             data['document_text'], 
@@ -118,11 +104,14 @@ def ask_vakil():
         return jsonify({"answer": result})
     except Exception as e:
         print(f"Error in ask_vakil: {e}", file=sys.stderr)
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": f"Failed to get answer: {str(e)}"}), 500
+        return jsonify({"error": "Failed to get answer"}), 500
+
+# Health check route for Render
+@app.route("/health")
+def health_check():
+    return jsonify({"status": "healthy"}), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    # IMPORTANT: Set debug=False in production
+    # debug=False is important for production/gunicorn
     app.run(host='0.0.0.0', port=port, debug=False)
