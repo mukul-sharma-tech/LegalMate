@@ -40,6 +40,7 @@ def know_your_rights():
         return jsonify({"error": "Invalid request or RAG system not initialized"}), 400
     try:
         result = rag_handler.get_rights(data['query'])
+        # --- FIX: Changed .dict() to .model_dump() ---
         return jsonify(result.model_dump())
     except Exception as e:
         print(f"Error in know_your_rights: {e}")
@@ -52,6 +53,7 @@ def simplify_document():
         return jsonify({"error": "Invalid request or RAG system not initialized"}), 400
     try:
         result = rag_handler.simplify_document(data['text'])
+        # --- FIX: Changed .dict() to .model_dump() ---
         return jsonify(result.model_dump())
     except Exception as e:
         print(f"Error in simplify_document: {e}")
@@ -64,6 +66,7 @@ def advise_case():
         return jsonify({"error": "Invalid request or RAG system not initialized"}), 400
     try:
         result = rag_handler.advise_on_case(data['case_text'])
+        # --- FIX: Changed .dict() to .model_dump() ---
         return jsonify(result.model_dump())
     except Exception as e:
         print(f"Error in advise_case: {e}")
